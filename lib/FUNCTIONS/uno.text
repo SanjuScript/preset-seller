@@ -1,0 +1,26 @@
+ // static final CollectionReference adminsCollection =
+  //     FirebaseFirestore.instance.collection('admins');
+
+  // static Future<void> transferData() async {
+  //   try {
+  //     // Get all documents from the users collection
+  //     QuerySnapshot querySnapshot = await users.get();
+
+  //     // Iterate through each document
+  //     for (QueryDocumentSnapshot documentSnapshot in querySnapshot.docs) {
+
+  //       // Get data from the document
+  //       Object? userData = documentSnapshot.data();
+
+  //       // Write data to the admins collection
+  //       await adminsCollection.doc(documentSnapshot.id).set(userData);
+
+  //       // Optional: Delete the document from the users collection
+  //       // await users.doc(documentSnapshot.id).delete();
+  //     }
+
+  //     print('Data transfer completed successfully');
+  //   } catch (e) {
+  //     print('Error transferring data: $e');
+  //   }
+  // }
