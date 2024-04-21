@@ -43,7 +43,7 @@ class ProfileElement extends StatelessWidget {
               fontSize: size.width * 0.05,
               fontWeight: FontWeight.bold,
               color: Colors.black,
-              fontFamily: 'rounder',
+              // fontFamily: 'rounder',
             ),
             textAlign: TextAlign.center,
           ),

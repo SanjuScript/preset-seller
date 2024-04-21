@@ -1,17 +1,12 @@
-import 'dart:developer';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:seller_app/API/auth_api.dart';
-import 'package:seller_app/FUNCTIONS/profile_auth_functions.dart';
 import 'package:seller_app/HELPERS/color_helper.dart';
 import 'package:seller_app/SCREENS/lightroom_presets/presets_list.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   @override
-  _HomeScreenState createState() => _HomeScreenState();
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
@@ -20,11 +15,14 @@ class _HomeScreenState extends State<HomeScreen> {
     Size size = MediaQuery.sizeOf(context);
 
     return Scaffold(
+      
       appBar: AppBar(
         title: const Text('Catogory List'),
+        backgroundColor: getColor("#f2f2f2"),
       ),
+      backgroundColor: getColor("#f2f2f2"),
       body: GridView.builder(
-        itemCount: 2,
+        itemCount: 1,
         gridDelegate:
             const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
         itemBuilder: (context, index) {
@@ -91,6 +89,7 @@ class _HomeScreenState extends State<HomeScreen> {
           );
         },
       ),
+   
     );
   }
 }

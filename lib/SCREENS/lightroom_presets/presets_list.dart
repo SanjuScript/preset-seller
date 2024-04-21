@@ -1,18 +1,20 @@
 import 'dart:developer';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:seller_app/API/auth_api.dart';
+import 'package:seller_app/FUNCTIONS/admin_data_controller_unit.dart';
 import 'package:seller_app/FUNCTIONS/files_upload_auth_functions.dart';
 import 'package:seller_app/HELPERS/color_helper.dart';
 import 'package:seller_app/MODEL/preset_data_model.dart';
 import 'package:seller_app/SCREENS/lightroom_presets/preset_view_page.dart';
+import 'package:seller_app/SCREENS/preset_uploading_page.dart';
 import 'package:seller_app/WIDGETS/CARD/preset_card.dart';
+import 'package:seller_app/WIDGETS/Texts/helper_texts.dart';
 
 class PresetListPage extends StatefulWidget {
-  const PresetListPage({Key? key}) : super(key: key);
+  const PresetListPage({super.key});
 
   @override
   State<PresetListPage> createState() => _PresetListPageState();
@@ -21,13 +23,15 @@ class PresetListPage extends StatefulWidget {
 class _PresetListPageState extends State<PresetListPage> {
   @override
   Widget build(BuildContext context) {
+    
+    Size size = MediaQuery.of(context).size;
     return Scaffold(
       backgroundColor: getColor("#f2f2f2"),
       body: Column(
         children: [
-          SizedBox(height: 50),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          const SizedBox(height: 50),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.0),
             child: Text(
               "Your Presets",
               style: TextStyle(
@@ -46,7 +50,7 @@ class _PresetListPageState extends State<PresetListPage> {
                   .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
+                  return const Center(child: CircularProgressIndicator());
                 }
 
                 if (snapshot.hasError) {
@@ -54,41 +58,35 @@ class _PresetListPageState extends State<PresetListPage> {
                 }
 
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  return Center(child: Text('No presets available'));
+                  return const Center(child: Text('No presets available'));
                 }
 
                 final documents = snapshot.data!.docs;
-
-                // Separate list and single presets
-                // List<Map<String, dynamic>> listPresets = [];
-                // List<Map<String, dynamic>> singlePresets = [];
-
-                // for (var document in documents) {
-                //   final data = document.data() as Map<String, dynamic>;
-                //   if (data['presets'] is List) {
-                //     listPresets.add(data);
-                //   } else {
-                //     singlePresets.add(data);
-                //   }
-                // }
 
                 return ListView.builder(
                   itemCount: documents.length,
                   itemBuilder: (context, index) {
                     final data =
                         documents[index].data() as Map<String, dynamic>;
+                    // log(data.toString());
+
                     final presetModel = PresetModel.fromJson(data);
-                    if (presetModel.presets != null) {
-                      // Handling for list presets
-                      return PresetCard(
-                        length: presetModel.presets?.length ??
-                            0, // Check if presets is null
-                        isListed: presetModel.presets != null,
-                        url: presetModel.presets?.first ??
-                            '', // Check if presets is null
-                        presetName: presetModel.name.toString(),
-                        price: presetModel.price.toString(),
-                        onTap: () {
+
+                    log(presetModel.presets!.first.toString());
+                    // return Image.network(presetModel.presets![index]);
+
+                    // if (presetModel.presets != null) {
+                    // Handling for list presets
+                    return PresetCard(
+                      length: presetModel.presets?.length ?? 0,
+                      isListed: presetModel.isList!,
+                      url: presetModel.presets!.first ?? '',
+                      presetName: presetModel.name.toString(),
+                      price: presetModel.price.toString(),
+                      status: presetModel.status.toString(),
+                      tag: presetModel.presets.toString(),
+                      onTap: () {
+                        if (presetModel.status != "rejected") {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -98,37 +96,54 @@ class _PresetListPageState extends State<PresetListPage> {
                               ),
                             ),
                           );
-                          log(presetModel.name!);
-                        },
-                      );
-                    } else {
-                      // Handling for single presets
-                      return PresetCard(
-                        length: presetModel.preset!.length.toInt(),
-                        isListed: presetModel.presets != null,
-                        url: presetModel.preset.toString(),
-                        presetName: presetModel.name.toString(),
-                        price: presetModel.price.toString(),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => PresetViewPage(
-                                presetModel: presetModel,
-                                docId: documents[index].id,
-                              ),
-                            ),
-                          );
-                          log(presetModel.name!);
-                        },
-                      );
-                    }
+                        } else {
+                          DataController.downloadDNGFile(
+                              presetModel.presets!.last, "${presetModel.name}");
+                          // log(presetModel.presets!.last);
+                        }
+                      },
+                    );
                   },
                 );
               },
             ),
           ),
         ],
+      ),
+      floatingActionButton: InkWell(
+        onTap: () {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => const SinglePresetUploadingPage()));
+        },
+        child: Container(
+          height: size.height * .10,
+          width: size.width * .40,
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black26,
+                offset: Offset(2, -2),
+                blurRadius: 10,
+              ),
+              BoxShadow(
+                color: Colors.black26,
+                offset: Offset(-2, 2),
+                blurRadius: 10,
+              ),
+            ],
+          ),
+          child: Center(
+            child: Icon(
+              Icons.add_rounded,
+              size: size.width * .10,
+              color: Colors.black87,
+            ),
+          ),
+        ),
       ),
     );
   }

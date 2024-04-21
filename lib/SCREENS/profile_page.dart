@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:device_info_plus/device_info_plus.dart';
@@ -10,7 +8,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:seller_app/API/auth_api.dart';
-import 'package:seller_app/AUTHENTICATION/authentication_page.dart';
+import 'package:seller_app/CONSTANTS/assets.dart';
 import 'package:seller_app/FUNCTIONS/files_upload_auth_functions.dart';
 import 'package:seller_app/FUNCTIONS/profile_auth_functions.dart';
 import 'package:seller_app/HELPERS/color_helper.dart';
@@ -20,6 +18,7 @@ import 'package:seller_app/MODEL/admin_data_model.dart';
 import 'package:seller_app/PROVIDERS/permission_provider.dart';
 import 'package:seller_app/WIDGETS/Texts/description_widget.dart';
 import 'package:seller_app/WIDGETS/profile_element.dart';
+import 'package:image/image.dart' as img;
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({Key? key}) : super(key: key);
@@ -226,7 +225,6 @@ class _ProfilePageState extends State<ProfilePage> {
                                         overflow: TextOverflow.ellipsis,
                                         fontWeight: FontWeight.bold,
                                         color: Colors.black,
-                                        fontFamily: 'rounder',
                                       ),
                                       textAlign: TextAlign.center,
                                     ),
@@ -265,8 +263,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                   ladius: 0,
                                 ),
                                 ProfileElement(
-                                  text: "Posts",
-                                  count: "20",
+                                  text: "Earned",
+                                  count: "16.3k",
                                   ladius: 0,
                                 ),
                               ],
@@ -306,7 +304,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             child: Row(
                               children: [
                                 SvgPicture.asset(
-                                  'assets/instaicon.svg',
+                                  GetAssetFile.instaIcon,
                                   height: size.height * 0.04,
                                   width: size.width * 0.04,
                                 ),
@@ -347,16 +345,22 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                   ElevatedButton(
                     onPressed: () async {
-                      DataUploadAdmin.uploadPreset(
-                          name: "moody green preset", price: 100);
+                      // DataUploadAdmin.uploadPreset(
+                      //     name: "moody yellow preset",
+                      //     price: 440,
+                      //     description: "Please buy our new preset for just 654");
                     },
                     child: const Text('Upload preset'),
                   ),
                   const SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: () async {
-                      DataUploadAdmin.uploadPresetList(
-                          name: "London preset", price: 250);
+                      // DataUploadAdmin.uploadPresetList(
+                      //   name: "London preset",
+                      //   price: 250,
+                      //   description:
+                      //       "THis preset is for you only please buy it",
+                      // );
                     },
                     child: const Text('Upload List of preset'),
                   ),
@@ -439,7 +443,16 @@ class _ProfilePageState extends State<ProfilePage> {
                       //   newFirstName: 'John',
                       //   newLastName: 'Doe',
                       // AuthController.signOut(context);
-                      AuthController.deleteAdminAccount(context);
+                      // AuthController.deleteAdminAccount(context);
+                      // showModalBottomSheet(
+                      //   isScrollControlled: true,
+                      //   showDragHandle: true,
+                      //   context: context,
+                      //   builder: (context) {
+                      //     return LoginPage();
+                      //   },
+                      // );
+                      AuthController.signOut(context);
                       // Navigator.push(
                       //     context,
                       //     MaterialPageRoute(

@@ -6,6 +6,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
+import 'package:seller_app/CONSTANTS/assets.dart';
 import 'package:seller_app/FUNCTIONS/profile_auth_functions.dart';
 import 'package:seller_app/FUNCTIONS/login_auth_functions.dart';
 import 'package:seller_app/PROVIDERS/auth_page_controller_provider.dart';
@@ -234,7 +235,7 @@ class _LoginPageState extends State<LoginPage> {
                             children: [
                               const Spacer(),
                               SvgPicture.asset(
-                                'assets/googleicon.svg',
+                                GetAssetFile.googleIcon,
                                 width: 35,
                                 height: 35,
                               ),
@@ -242,7 +243,7 @@ class _LoginPageState extends State<LoginPage> {
                                 width: 15,
                               ),
                               SvgPicture.asset(
-                                'assets/fbicon.svg',
+                                GetAssetFile.fbIcon,
                                 width: 35,
                                 height: 35,
                               ),

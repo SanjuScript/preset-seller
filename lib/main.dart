@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:seller_app/PROVIDERS/auth_page_controller_provider.dart';
 import 'package:seller_app/PROVIDERS/bottom_nav_provider.dart';
+import 'package:seller_app/PROVIDERS/page_view_controller_provider.dart';
 import 'package:seller_app/PROVIDERS/password_visibility_provider.dart';
 import 'package:seller_app/AUTHENTICATION/authentication_page.dart';
 import 'package:seller_app/PROVIDERS/permission_provider.dart';
@@ -17,7 +18,7 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-
+  
   runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider(
@@ -35,18 +36,22 @@ Future<void> main() async {
       ChangeNotifierProvider(
         create: (_) => PermissionProvider(),
       ),
+      ChangeNotifierProvider(
+        create: (_) => PresetsPageViewContollerProvider(),
+      ),
     ],
     child: MyApp(),
   ));
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
-        statusBarColor: Color.fromRGBO(0, 0, 0, 0),
-        statusBarIconBrightness: Brightness.dark),
+      statusBarColor: Color.fromRGBO(0, 0, 0, 0),
+      statusBarIconBrightness: Brightness.dark,
+    ),
   );
 }
 
 class MyApp extends StatelessWidget {
-   MyApp({super.key});
+  MyApp({super.key});
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
@@ -61,10 +66,8 @@ class MyApp extends StatelessWidget {
           }
 
           if (snapshot.hasData && snapshot.data != null) {
-            // User is authenticated, navigate to BottomNav
             return const BottomNav();
           } else {
-            // User is not authenticated, navigate to AuthenticationPage
             return const AuthenticationPage();
           }
         },

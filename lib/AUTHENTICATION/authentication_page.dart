@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import 'package:seller_app/AUTHENTICATION/both_view.dart';
+import 'package:seller_app/CONSTANTS/assets.dart';
 import 'package:seller_app/PROVIDERS/auth_page_controller_provider.dart';
 
 class AuthenticationPage extends StatelessWidget {
@@ -25,8 +26,8 @@ class AuthenticationPage extends StatelessWidget {
                   Transform.translate(
                     offset: Offset(100, -100),
                     child: Transform.scale(
-                      scale: 2,
-                      child: Lottie.asset('assets/lottie1.json',
+                      scale: 5,
+                      child: Lottie.asset(GetAssetFile.loginBg,
                           frameRate: FrameRate.max,
                           repeat: true,
                           reverse: true),

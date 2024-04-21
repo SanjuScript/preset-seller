@@ -7,4 +7,7 @@ class AuthApi {
   static final FirebaseStorage storage = FirebaseStorage.instance;
   static CollectionReference admins =
       FirebaseFirestore.instance.collection('admins');
+  static DocumentReference documentRef = FirebaseFirestore.instance
+      .collection('admins')
+      .doc(auth.currentUser!.uid);
 }

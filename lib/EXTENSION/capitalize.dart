@@ -11,5 +11,3 @@ extension CapitalizeFirstLetterExtension on String {
     }).join(' ');
   }
 }
-
-

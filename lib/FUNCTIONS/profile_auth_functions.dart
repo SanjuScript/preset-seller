@@ -3,10 +3,10 @@
 import 'dart:developer';
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:seller_app/API/auth_api.dart';
 import 'package:seller_app/AUTHENTICATION/authentication_page.dart';
 import 'package:seller_app/AUTHENTICATION/login_page.dart';
@@ -119,10 +119,16 @@ class AuthController {
       return;
     }
 
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      File imageFile = File(pickedFile.path);
+    // final picker = ImagePicker();
+    // final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.image,
+      compressionQuality: 0,
+      allowCompression: true,
+      
+    );
+    if (result!.xFiles.single.path != null) {
+      File imageFile = File(result.xFiles.single.path);
       // Check image size
       int fileSizeInBytes = imageFile.lengthSync();
       double fileSizeInMB = fileSizeInBytes / (1024 * 1024);
