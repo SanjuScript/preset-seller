@@ -1,9 +1,5 @@
 # Miscellaneous
 *.class
-*.env
-*.env.example
-*.env.local
-*.env.staging
 *.log
 *.pyc
 *.swp
