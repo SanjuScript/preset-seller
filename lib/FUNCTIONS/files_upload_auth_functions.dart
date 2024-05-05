@@ -1,6 +1,5 @@
 import 'dart:developer';
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -8,13 +7,13 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:mime/mime.dart';
 import 'package:seller_app/API/auth_api.dart';
-import 'package:seller_app/HELPERS/status_helper.dart';
 import 'package:path/path.dart' as p;
+import 'package:seller_app/API/notification_handling_api.dart';
 
 class DataUploadAdmin {
   static bool isUploading = false;
-  // static StatusState status = StatusState.pending;
 
+  // static StatusState status = StatusState.pending;
   static Future<void> uploadPreset({
     required String name,
     required int price,
@@ -40,13 +39,18 @@ class DataUploadAdmin {
         var metadata = SettableMetadata(
           contentType: mimeType,
         );
-        var snapshot = await AuthApi.storage
+        var uploadTask = AuthApi.storage
             .ref()
             .child('lr_presets/${AuthApi.auth.currentUser!.uid}/'
                 '${DateTime.now().millisecondsSinceEpoch}$extension')
             .putFile(file, metadata);
+        uploadTask.snapshotEvents.listen((TaskSnapshot snapshot) {
+          double progress =
+              (100 * snapshot.bytesTransferred) / snapshot.totalBytes;
+          log('Upload progress: $progress');
+        });
+        var snapshot = await uploadTask;
         var presetDownloadUrl = await snapshot.ref.getDownloadURL();
-
         presetImagesUrls.add(presetDownloadUrl);
       }
 
@@ -55,21 +59,25 @@ class DataUploadAdmin {
 
       List<String> coverImagesUrls = [];
       for (int i = 0; i < coverImages.length; i++) {
-        var coverImageSnapshot = await AuthApi.storage
+        var coverImageuploadTask = AuthApi.storage
             .ref()
             .child('lr_presets/${AuthApi.auth.currentUser!.uid}/'
                 '${DateTime.now().millisecondsSinceEpoch}.jpg')
             .putFile(coverImages[i]);
+
+        coverImageuploadTask.snapshotEvents.listen((TaskSnapshot snapshot) {
+          double progress =
+              (100 * snapshot.bytesTransferred) / snapshot.totalBytes;
+          log('Upload progress: $progress');
+        });
+        var coverImageSnapshot = await coverImageuploadTask;
         var coverImageUrl = await coverImageSnapshot.ref.getDownloadURL();
         coverImagesUrls.add(coverImageUrl);
       }
 
-      // Update the Firestore document in the "admins" collection
-      String name = AuthApi.auth.currentUser!.displayName.toString();
       DocumentReference docRef = await AuthApi.admins
           .doc(AuthApi.auth.currentUser!.uid)
-          .collection(
-              'lightroom_presets') // Create a subcollection named "lightroom_presets"
+          .collection('lightroom_presets')
           .add(
         {
           'presets': presetImagesUrls,
@@ -93,8 +101,18 @@ class DataUploadAdmin {
       Fluttertoast.showToast(
         msg: 'Presets uploaded successfully. They require manual approval.',
       );
+      await NotificationApi.showSimpleNotification(
+        title: "Presets Uploaded",
+        body: "Your presets have been uploaded and are pending review.",
+        payload: "preset_uploaded",
+      );
     } catch (e) {
       log('Error uploading Lightroom Preset: $e');
+      await NotificationApi.showSimpleNotification(
+        title: "Upload Failure",
+        body: "Failed to upload presets. Please try again later.",
+        payload: "preset_upload_failure",
+      );
       Fluttertoast.showToast(
           msg: 'Failed to upload Lightroom Preset. Please try again.');
     } finally {
@@ -173,8 +191,18 @@ class DataUploadAdmin {
       await docRef.update({"docId": docId});
       Fluttertoast.cancel();
       Fluttertoast.showToast(msg: 'Presets uploaded successfully');
+      await NotificationApi.showSimpleNotification(
+        title: "Presets Uploaded",
+        body: "Your presets have been uploaded and are pending review.",
+        payload: "preset_uploaded",
+      );
     } catch (e) {
       debugPrint('Error uploading Presets: $e');
+      await NotificationApi.showSimpleNotification(
+        title: "Upload Failure",
+        body: "Failed to upload presets. Please try again later.",
+        payload: "preset_upload_failure",
+      );
       Fluttertoast.showToast(
         msg: 'Failed to upload Presets. Please try again.',
         backgroundColor: Colors.red,
@@ -184,55 +212,60 @@ class DataUploadAdmin {
     }
   }
 
-  static Future<void> addMoreImagesToPresetList({
-    required String docId,
-    required List<File> presetFiles,
-  }) async {
-    try {
-      isUploading = true;
-      List<String> downloadUrls = [];
-      for (var pickedFile in presetFiles) {
-        var snapshot = await AuthApi.storage
-            .ref()
-            .child(
-                'lr_presets/${AuthApi.auth.currentUser!.uid}/${pickedFile.path.split('/').last}')
-            .putFile(pickedFile);
-        var downloadUrl = await snapshot.ref.getDownloadURL();
-        downloadUrls.add(downloadUrl);
-      }
-
-      // String docId = snapshot.docs.first.id;
-      log(docId);
-      // Update the Firestore document with the fetched document ID
-      await AuthApi.admins
-          .doc(AuthApi.auth.currentUser!.uid)
-          .collection('lightroom_presets')
-          .doc(docId)
-          .update({
-        'presets': FieldValue.arrayUnion(downloadUrls),
-      });
-      for (var url in downloadUrls) {
-        await AuthApi.admins
-            .doc(AuthApi.auth.currentUser!.uid)
-            .collection('lightroom_presets')
-            .where('presets', arrayContains: url)
-            .get()
-            .then((snapshot) {
-          for (var doc in snapshot.docs) {
-            if (doc.exists) {
-              doc.reference.update({'status': 'pending'});
-            }
-          }
-        });
-      }
-      Fluttertoast.cancel();
-      Fluttertoast.showToast(msg: 'Additional images uploaded successfully');
-    } catch (e) {
-      debugPrint('Error uploading additional images: $e');
+  static Future<void> uploadProfilePicture(File imageFile) async {
+    if (isUploading) {
       Fluttertoast.showToast(
-        msg: 'Failed to upload additional images. Please try again.',
+        msg: 'A file is already being uploaded. Please wait.',
+        backgroundColor: Colors.orange,
+      );
+      return;
+    }
+    Fluttertoast.showToast(
+      msg: 'Uploading your profile picture....',
+      backgroundColor: Colors.orange,
+    );
+
+    // Check image size
+    int fileSizeInBytes = imageFile.lengthSync();
+    double fileSizeInMB = fileSizeInBytes / (1024 * 1024);
+    if (fileSizeInMB > 5) {
+      Fluttertoast.showToast(
+        msg: 'Image size must not exceed 5MB',
         backgroundColor: Colors.red,
       );
+      return;
+    }
+
+    try {
+      isUploading = true;
+
+      // Upload new picture
+      var snapshot = await AuthApi.storage
+          .ref()
+          .child('profile_pictures/${AuthApi.auth.currentUser!.uid}.jpg')
+          .putFile(imageFile);
+      var downloadUrl = await snapshot.ref.getDownloadURL();
+
+      // Update profile picture URL in the database
+      await AuthApi.admins
+          .doc(AuthApi.auth.currentUser!.uid)
+          .update({'profile_picture': downloadUrl});
+
+      Fluttertoast.showToast(msg: 'Profile picture updated successfully');
+      await NotificationApi.showSimpleNotification(
+        title: "Profile Picture Uploaded",
+        body: "Your profile picture has been uploaded successfully.",
+        payload: "profile_picture_uploaded",
+      );
+    } catch (e) {
+      print('Error uploading profile picture: $e');
+      await NotificationApi.showSimpleNotification(
+        title: "Upload Failure",
+        body: "Failed to upload profile picture. Please try again later.",
+        payload: "profile_picture_uploaded",
+      );
+      Fluttertoast.showToast(
+          msg: 'Failed to upload profile picture. Please try again.');
     } finally {
       isUploading = false;
     }
@@ -243,12 +276,20 @@ class DataUploadAdmin {
     required bool isListedPreset,
   }) async {
     try {
+
+      //  await NotificationApi.showSimpleNotification(
+      //       title: "Upload Success",
+      //       body:
+      //           "Your newly added images are successfully uploaded to ",
+      //       payload: "preset_cover_uploaded_$docId", // Include docId in the payload
+      //     );
       FilePickerResult? result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         compressionQuality: 35,
         allowMultiple: true,
         allowedExtensions: ['jpg', 'jpeg'],
       );
+        
 
       final xfilePicks = result!.xFiles;
 
@@ -276,7 +317,7 @@ class DataUploadAdmin {
         if (existingCoverImagesData != null) {
           // Calculate the number of additional cover images that can be added
           const int oneTime = 4;
-          const int moreList = 10;
+          const int moreList = 12;
 
           int remainingSlots = isListedPreset
               ? moreList
@@ -312,6 +353,13 @@ class DataUploadAdmin {
           // Update the Firestore document with all cover images
           await documentRef
               .update({'coverImages': allCoverImagesUrls, 'status': "pending"});
+          String presetName = data['name'];
+          await NotificationApi.showSimpleNotification(
+            title: "Upload Success",
+            body:
+                "Your newly added images are successfully uploaded to $presetName",
+            payload: "preset_cover_uploaded_$docId", // Include docId in the payload
+          );
 
           log('New cover images added successfully');
           Fluttertoast.showToast(msg: 'New cover images added successfully');
@@ -319,6 +367,12 @@ class DataUploadAdmin {
       }
     } catch (e) {
       log('Error adding new cover images: $e');
+      await NotificationApi.showSimpleNotification(
+        title: "Upload Failure",
+        body: "Failed to upload images. Please try again later.",
+        payload: "preset_cover_uploaded_$docId",
+      );
+
       Fluttertoast.showToast(
         msg: 'Failed to add new cover images. Please try again.',
       );
@@ -338,9 +392,9 @@ class DataUploadAdmin {
         'presetsBoughtCount': FieldValue.increment(1),
       });
 
-      print('Presets bought count incremented successfully');
+      log('Presets bought count incremented successfully');
     } catch (e) {
-      print('Error incrementing presets bought count: $e');
+      log('Error incrementing presets bought count: $e');
     }
   }
 }

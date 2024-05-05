@@ -1,5 +1,4 @@
 // ignore_for_file: use_build_context_synchronously
-
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -7,6 +6,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 import 'package:seller_app/CONSTANTS/assets.dart';
+import 'package:seller_app/CONSTANTS/fonts.dart';
 import 'package:seller_app/FUNCTIONS/profile_auth_functions.dart';
 import 'package:seller_app/FUNCTIONS/login_auth_functions.dart';
 import 'package:seller_app/PROVIDERS/auth_page_controller_provider.dart';
@@ -60,7 +60,7 @@ class _LoginPageState extends State<LoginPage> {
                     fontSize: size.width * 0.12,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
-                    fontFamily: 'rounder',
+                    fontFamily: Getfont.rounder,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -196,7 +196,7 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                         ),
                         AuthenticationButton(
-                          onTap: ()async {
+                          onTap: () async {
                             final fieldData = await getFieldData();
                             if (fieldData != null && fieldData) {
                               LoginAuth.doSignIn(
@@ -234,10 +234,15 @@ class _LoginPageState extends State<LoginPage> {
                           child: Row(
                             children: [
                               const Spacer(),
-                              SvgPicture.asset(
-                                GetAssetFile.googleIcon,
-                                width: 35,
-                                height: 35,
+                              InkWell(
+                                onTap: () {
+                                  LoginAuth.doGoogleSignIn(context);
+                                },
+                                child: SvgPicture.asset(
+                                  GetAssetFile.googleIcon,
+                                  width: 35,
+                                  height: 35,
+                                ),
                               ),
                               const SizedBox(
                                 width: 15,

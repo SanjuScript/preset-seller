@@ -2,6 +2,7 @@ import 'dart:developer';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:seller_app/API/notification_handling_api.dart';
 import 'package:seller_app/PROVIDERS/bottom_nav_provider.dart';
 import 'package:seller_app/SCREENS/home_page.dart';
 import 'package:seller_app/SCREENS/profile_page.dart';
@@ -32,7 +33,7 @@ class _BottomNavState extends State<BottomNav> {
     super.initState();
     final provider = context.read<BottomNavProvider>();
     pageController = provider.createPageController();
-    pages = [ const HomeScreen(), const ProfilePage()];
+    pages = [const HomeScreen(), const ProfilePage()];
   }
 
   @override
@@ -96,6 +97,10 @@ class _BottomNavState extends State<BottomNav> {
                   currentIndex: provider.selectedIndex,
                   onTap: (int index) {
                     provider.selectedIndex = index;
+                    if (index != 0) {
+                      // NotificationApi.showPresetUploadedNotification();
+                    }
+
                     navigateToPage(index);
                   },
                   items: <BottomNavigationBarItem>[

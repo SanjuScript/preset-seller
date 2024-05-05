@@ -31,12 +31,13 @@ class PresetAndCoverImageView extends StatelessWidget {
                 builder: (context, value, child) {
               return Container(
                 decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                        color: value.selectedIndex == index
-                            ? Colors.grey[600]!
-                            : Colors.transparent,
-                        width: 3)),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                      color: value.selectedIndex == index
+                          ? Colors.grey[600]!
+                          : Colors.transparent,
+                      width: 3),
+                ),
                 child: Stack(
                   fit: StackFit.passthrough,
                   children: [

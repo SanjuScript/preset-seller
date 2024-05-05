@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
+import 'package:seller_app/CONSTANTS/fonts.dart';
 import 'package:seller_app/EXTENSION/capitalize.dart';
 import 'package:seller_app/FUNCTIONS/admin_data_controller_unit.dart';
 import 'package:seller_app/FUNCTIONS/files_upload_auth_functions.dart';
@@ -28,10 +29,7 @@ import 'package:seller_app/WIDGETS/Texts/preset_page_read_more_text.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 class PresetViewPage extends StatefulWidget {
-  final PresetModel presetModel;
-  final String docId;
-  const PresetViewPage(
-      {super.key, required this.presetModel, required this.docId});
+  const PresetViewPage({super.key});
 
   @override
   State<PresetViewPage> createState() => _PresetViewPageState();
@@ -79,8 +77,25 @@ class _PresetViewPageState extends State<PresetViewPage> {
     super.initState();
     final provider = context.read<PresetsPageViewContollerProvider>();
     pageController = provider.createPageController();
-    currentStatus = widget.presetModel.status == "approved";
+    // currentStatus = presetModel.status == "approved";
   }
+
+  @override
+void didChangeDependencies() {
+  super.didChangeDependencies();
+  final Map<String, dynamic> arguments =
+      ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+  final PresetModel presetModel = arguments['presetModel'];
+  if (presetModel != null) {
+    setState(() {
+      currentStatus = presetModel.status == "approved";
+    });
+  } else {
+    // Handle the case where presetModel is null
+    // For example, show an error message or navigate back
+    Navigator.pop(context);
+  }
+}
 
   @override
   void dispose() {
@@ -90,10 +105,13 @@ class _PresetViewPageState extends State<PresetViewPage> {
 
   @override
   Widget build(BuildContext context) {
-    log(widget.presetModel.presets.toString());
+    // log(widget.presetModel.presets.toString());
     Size size = MediaQuery.sizeOf(context);
     final provider = Provider.of<PresetsPageViewContollerProvider>(context);
-    // log(provider.toString());
+    final Map<String, dynamic> arguments =
+        ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+   final PresetModel presetModel = arguments['presetModel'];
+
     return Scaffold(
       backgroundColor: getColor("#f2f2f2"),
       appBar: AppBar(
@@ -103,7 +121,7 @@ class _PresetViewPageState extends State<PresetViewPage> {
         shadowColor: Colors.grey,
         surfaceTintColor: Colors.transparent,
         title: Text(
-          "Lightroom Presets - ${widget.presetModel.presets!.length.toString()}",
+          "Lightroom Presets - ${presetModel.presets!.length.toString()}",
           style: TextStyle(
             fontSize: size.width * 0.06,
             overflow: TextOverflow.ellipsis,
@@ -128,19 +146,19 @@ class _PresetViewPageState extends State<PresetViewPage> {
                     children: [
                       PageView.builder(
                         controller: pageController,
-                        itemCount: widget.presetModel.presets!.length +
-                            widget.presetModel.coverImages!.length,
+                        itemCount: presetModel.presets!.length +
+                            presetModel.coverImages!.length,
                         onPageChanged: onPageChange,
                         itemBuilder: (context, index) {
-                          if (index < widget.presetModel.presets!.length) {
+                          if (index < presetModel.presets!.length) {
                             return ListOfPresets(
-                              url: widget.presetModel.presets![index],
+                              url: presetModel.presets![index],
                             );
                           } else {
                             int coverIndex =
-                                index - widget.presetModel.presets!.length;
+                                index - presetModel.presets!.length;
                             return ListOfPresets(
-                              url: widget.presetModel.coverImages![coverIndex],
+                              url: presetModel.coverImages![coverIndex],
                             );
                           }
                         },
@@ -161,7 +179,7 @@ class _PresetViewPageState extends State<PresetViewPage> {
                                   fontSize: size.width * 0.04,
                                   overflow: TextOverflow.ellipsis,
                                   color: Colors.black54,
-                                  fontFamily: 'hando',
+                                  fontFamily: Getfont.rounder,
                                 ),
                                 textAlign: TextAlign.center,
                               ),
@@ -181,8 +199,8 @@ class _PresetViewPageState extends State<PresetViewPage> {
                             child: Center(
                               child: SmoothPageIndicator(
                                 controller: pageController, // PageController
-                                count: widget.presetModel.presets!.length +
-                                    widget.presetModel.coverImages!.length,
+                                count: presetModel.presets!.length +
+                                    presetModel.coverImages!.length,
                                 effect: const WormEffect(
                                   dotWidth: 8,
                                   dotColor: Colors.white,
@@ -206,19 +224,19 @@ class _PresetViewPageState extends State<PresetViewPage> {
                   width: size.width * .90,
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
-                    itemCount: widget.presetModel.presets!.length +
-                        widget.presetModel.coverImages!.length +
+                    itemCount: presetModel.presets!.length +
+                        presetModel.coverImages!.length +
                         2,
                     itemBuilder: (context, index) {
-                      if (index < widget.presetModel.presets!.length) {
+                      if (index < presetModel.presets!.length) {
                         return PresetAndCoverImageView(
                           onTap: () {
                             provider.navigateToPage(pageController, index);
                           },
                           index: index,
-                          imgUrl: widget.presetModel.presets![index],
+                          imgUrl: presetModel.presets![index],
                         );
-                      } else if (index == widget.presetModel.presets!.length) {
+                      } else if (index == presetModel.presets!.length) {
                         return const Padding(
                           padding: EdgeInsets.symmetric(vertical: 15),
                           child: VerticalDivider(
@@ -226,8 +244,8 @@ class _PresetViewPageState extends State<PresetViewPage> {
                           ),
                         );
                       } else if (index ==
-                          widget.presetModel.presets!.length +
-                              widget.presetModel.coverImages!.length +
+                          presetModel.presets!.length +
+                              presetModel.coverImages!.length +
                               1) {
                         return SizedBox(
                           height: size.height * .10,
@@ -235,8 +253,8 @@ class _PresetViewPageState extends State<PresetViewPage> {
                           child: InkWell(
                             onTap: () async {
                               DataUploadAdmin.addMoreCoverImages(
-                                  docId: widget.presetModel.docId.toString(),
-                                  isListedPreset: widget.presetModel.isList!);
+                                  docId: presetModel.docId.toString(),
+                                  isListedPreset: presetModel.isList!);
                             },
                             child: Container(
                                 margin: const EdgeInsets.all(10),
@@ -249,7 +267,7 @@ class _PresetViewPageState extends State<PresetViewPage> {
                         );
                       } else {
                         int coverIndex =
-                            index - widget.presetModel.presets!.length - 1;
+                            index - presetModel.presets!.length - 1;
                         return PresetAndCoverImageView(
                           onLongPress: () async {
                             log(coverIndex.toString());
@@ -257,14 +275,13 @@ class _PresetViewPageState extends State<PresetViewPage> {
                               bool confirm =
                                   await showSingleImageDeleteDialogue(
                                       context: context,
-                                      imageUrl: widget.presetModel
+                                      imageUrl: presetModel
                                           .coverImages![coverIndex]);
 
                               if (confirm) {
                                 DataController.deleteCoverImageByUrl(
-                                    docId: widget.docId,
-                                    coverImageUrl: widget
-                                        .presetModel.coverImages![coverIndex]);
+                                    docId: presetModel.docId.toString(),
+                                    coverImageUrl: presetModel.coverImages![coverIndex]);
                               }
                             }
                           },
@@ -272,7 +289,7 @@ class _PresetViewPageState extends State<PresetViewPage> {
                             provider.navigateToPage(pageController, index - 1);
                           },
                           index: index - 1,
-                          imgUrl: widget.presetModel.coverImages![coverIndex],
+                          imgUrl: presetModel.coverImages![coverIndex],
                         );
                       }
                     },
@@ -284,10 +301,10 @@ class _PresetViewPageState extends State<PresetViewPage> {
               height: 10,
             ),
             GetPresetNameGiver(
-              presetName: widget.presetModel.name.toString(),
-              price: widget.presetModel.price.toString(),
+              presetName: presetModel.name.toString(),
+              price: presetModel.price.toString(),
             ),
-            GetReadMoreText(text: widget.presetModel.description.toString()),
+            GetReadMoreText(text: presetModel.description.toString()),
             GetPresetEditButton(
               onPressed: () {
                 if (currentStatus) {
@@ -295,7 +312,7 @@ class _PresetViewPageState extends State<PresetViewPage> {
                       context,
                       MaterialPageRoute(
                           builder: (context) => PresetMetadataEditingPage(
-                                presetModel: widget.presetModel,
+                                presetModel: presetModel,
                               )));
                 } else {
                   Fluttertoast.showToast(
@@ -316,7 +333,7 @@ class _PresetViewPageState extends State<PresetViewPage> {
                       text:
                           "Are you sure you want to delete this preset pack? This action cannot be undone.");
                   if (confirmDelete) {
-                    DataController.deleteDocument(widget.docId);
+                    DataController.deleteDocument(presetModel.docId.toString());
                     Navigator.pop(context);
                     // print("object");
                   }
@@ -355,14 +372,14 @@ class _PresetViewPageState extends State<PresetViewPage> {
                               .capitalizeFirstLetterOfEachWord()),
                       GetText1(
                           text:
-                              widget.presetModel.presetsBoughtCount.toString())
+                              presetModel.presetsBoughtCount.toString())
                     ],
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       GetText1(text: "Likes".capitalizeFirstLetterOfEachWord()),
-                      GetText1(text: widget.presetModel.likeCount.toString())
+                      GetText1(text: presetModel.likeCount.toString())
                     ],
                   ),
                   Row(
@@ -370,7 +387,7 @@ class _PresetViewPageState extends State<PresetViewPage> {
                     children: [
                       GetText1(
                           text: "Shares".capitalizeFirstLetterOfEachWord()),
-                      GetText1(text: widget.presetModel.shares.toString())
+                      GetText1(text: presetModel.shares.toString())
                     ],
                   ),
                 ],

@@ -3,6 +3,7 @@
 
   // static Future<void> transferData() async {
   //   try {
+    
   //     // Get all documents from the users collection
   //     QuerySnapshot querySnapshot = await users.get();
 
@@ -22,5 +23,97 @@
   //     print('Data transfer completed successfully');
   //   } catch (e) {
   //     print('Error transferring data: $e');
+  //   }
+  // }
+
+  
+  Future<void> sendNotificationToUser(
+      String userFCMToken, String title, String body) async {
+    try {
+      String serverKey = dotenv.env['SERVER_KEY'] ?? '';
+      const String fcmEndpoint = 'https://fcm.googleapis.com/fcm/send';
+
+      Map<String, dynamic> notification = {
+        'notification': {'title': title, 'body': body, 'sound': 'default'},
+        'priority': 'high',
+        'to': userFCMToken
+      };
+
+      // Send the notification request to the FCM endpoint
+      final http.Response response = await http.post(
+        Uri.parse(fcmEndpoint),
+        headers: <String, String>{
+          'Content-Type': 'application/json',
+          'Authorization': 'key=$serverKey',
+        },
+        body: jsonEncode(notification),
+      );
+
+      // Check the response
+      log(response.body);
+      if (response.statusCode == 200) {
+        log('Notification sent successfully.');
+      } else {
+        log('Failed to send notification. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      log('Error sending notification: $e');
+    }
+  }
+
+  String token =
+      "c0QZcTo9SECnzr1S3ECvKk:APA91bHBONLnk-BCM0ETbyq6kn0P6wTCGd1MN3PwdyYDBNDsW2MyNMxylOZLhGsGhgsI4AU1hTaqQOQ9M0A5FlKYLOyQAYrGKJZXAnHpK7aC5u6hE0VMHp62VURPU0mYRmrWeSJv6RiS";
+
+  // static Future<void> addMoreImagesToPresetList({
+  //   required String docId,
+  //   required List<File> presetFiles,
+  // }) async {
+  //   try {
+  //     isUploading = true;
+  //     List<String> downloadUrls = [];
+  //     for (var pickedFile in presetFiles) {
+  //       var snapshot = await AuthApi.storage
+  //           .ref()
+  //           .child(
+  //               'lr_presets/${AuthApi.auth.currentUser!.uid}/${pickedFile.path.split('/').last}')
+  //           .putFile(pickedFile);
+  //       var downloadUrl = await snapshot.ref.getDownloadURL();
+  //       downloadUrls.add(downloadUrl);
+  //     }
+
+  //     // String docId = snapshot.docs.first.id;
+  //     log(docId);
+  //     // Update the Firestore document with the fetched document ID
+  //     await AuthApi.admins
+  //         .doc(AuthApi.auth.currentUser!.uid)
+  //         .collection('lightroom_presets')
+  //         .doc(docId)
+  //         .update({
+  //       'presets': FieldValue.arrayUnion(downloadUrls),
+  //     });
+  //     for (var url in downloadUrls) {
+  //       await AuthApi.admins
+  //           .doc(AuthApi.auth.currentUser!.uid)
+  //           .collection('lightroom_presets')
+  //           .where('presets', arrayContains: url)
+  //           .get()
+  //           .then((snapshot) {
+  //         for (var doc in snapshot.docs) {
+  //           if (doc.exists) {
+  //             doc.reference.update({'status': 'pending'});
+  //           }
+  //         }
+  //       });
+  //     }
+  //     Fluttertoast.cancel();
+  //     Fluttertoast.showToast(msg: 'Additional images uploaded successfully');
+  //   } catch (e) {
+  //     debugPrint('Error uploading additional images: $e');
+  //     Fluttertoast.showToast(
+  //       msg: 'Failed to upload additional images. Please try again.',
+  //       backgroundColor: Colors.red,
+  //     );
+  //   } finally {
+  //     isUploading = false;
   //   }
   // }

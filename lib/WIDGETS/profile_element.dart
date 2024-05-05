@@ -20,7 +20,7 @@ class ProfileElement extends StatelessWidget {
       width: size.width * .30,
       padding: EdgeInsets.symmetric(vertical: 10),
       decoration: BoxDecoration(
-        color: Colors.green.withOpacity(.1),
+        color:Colors.transparent,
         borderRadius:  BorderRadius.only(
             bottomLeft: Radius.circular(ladius),
             bottomRight: Radius.circular(rradius)),

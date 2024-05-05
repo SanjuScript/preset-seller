@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:seller_app/CONSTANTS/fonts.dart';
 
 class DescriptionText extends StatelessWidget {
   final String description;
@@ -24,7 +25,7 @@ class DescriptionText extends StatelessWidget {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: const BorderRadius.all(
-                Radius.circular(20),
+                Radius.circular(10),
               ),
               boxShadow: [
                 BoxShadow(
@@ -44,10 +45,11 @@ class DescriptionText extends StatelessWidget {
               child: Text(
                 description,
                 style: TextStyle(
+                  wordSpacing: 1.2,
                   fontSize: size.width * 0.04,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                  fontFamily: 'hando',
+                  fontWeight: FontWeight.normal,
+                  color: Colors.black87,
+                  // fontFamily: Getfont.rounder,
 
                 ),
                 textAlign: TextAlign.start,

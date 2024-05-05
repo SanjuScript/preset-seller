@@ -12,7 +12,12 @@
           "package_name": "com.example.seller_app"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "465956513894-odk0colhtj6lpv36o9b1ih7f41hrn2m3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCiOUPOpCyJmS987d9Itcf90HAam4KcMMw"
@@ -20,7 +25,55 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "465956513894-odk0colhtj6lpv36o9b1ih7f41hrn2m3.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "465956513894-5mnshvpb7t2fdmqlmntdfs9nf5i7lloj.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.sellerApp"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:465956513894:android:d0f54f0ebc80f9204e25a7",
+        "android_client_info": {
+          "package_name": "com.example.seller_app_users"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "465956513894-odk0colhtj6lpv36o9b1ih7f41hrn2m3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCiOUPOpCyJmS987d9Itcf90HAam4KcMMw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "465956513894-odk0colhtj6lpv36o9b1ih7f41hrn2m3.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "465956513894-5mnshvpb7t2fdmqlmntdfs9nf5i7lloj.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.sellerApp"
+              }
+            }
+          ]
         }
       }
     }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:seller_app/CONSTANTS/fonts.dart';
 import 'package:seller_app/EXTENSION/capitalize.dart';
 
 class GetText1 extends StatelessWidget {
@@ -14,8 +15,8 @@ class GetText1 extends StatelessWidget {
         fontSize: size.width * 0.06,
         overflow: TextOverflow.ellipsis,
         fontWeight: FontWeight.bold,
-        color: Colors.black,
-        fontFamily: 'rounder',
+        color: Colors.black87,
+        fontFamily: Getfont.rounder,
       ),
     );
   }

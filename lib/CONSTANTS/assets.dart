@@ -5,4 +5,7 @@ class GetAssetFile {
   static const String fbIcon = "${file}fbicon.svg";
   static const String instaIcon = "${file}instaicon.svg";
   static const String approvedIcon = "${file}approved.png";
+  static const String reviewIcon = "${file}time.png";
+  static const String rejectedIcon = "${file}rejected.png";
+  static const String presetImg = "${file}presetImg.jpg";
 }

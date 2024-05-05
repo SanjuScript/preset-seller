@@ -68,22 +68,3 @@ class PresetModel {
     return data;
   }
 }
-
-
-// class SinglePresetModel {
-//   String? preset;
-//   int? price;
-//   String? name;
-//   String? ownerData;
-
-//   SinglePresetModel({this.preset, this.price, this.name, this.ownerData});
-
-//   factory SinglePresetModel.fromJson(Map<String, dynamic> json) {
-//     return SinglePresetModel(
-//       preset: json['preset'],
-//       price: json['price'],
-//       name: json['name'],
-//       ownerData: json['owner_data'],
-//     );
-//   }
-// }

@@ -1,22 +1,13 @@
-import 'dart:developer';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:seller_app/EXTENSION/capitalize.dart';
 import 'package:seller_app/FUNCTIONS/admin_data_controller_unit.dart';
-import 'package:seller_app/FUNCTIONS/files_upload_auth_functions.dart';
 import 'package:seller_app/HELPERS/color_helper.dart';
 import 'package:seller_app/MODEL/preset_data_model.dart';
-import 'package:seller_app/WIDGETS/BUTTONS/login_buttons.dart';
-import 'package:seller_app/WIDGETS/BUTTONS/preset_metadata_edit_buttons.dart';
-import 'package:seller_app/WIDGETS/Texts/helper_texts.dart';
-import 'package:seller_app/WIDGETS/Texts/preset_page_helper_text.dart';
-import 'package:seller_app/WIDGETS/custom_textfield.dart';
 import 'package:seller_app/WIDGETS/preset_editing_box.dart';
-import 'package:seller_app/WIDGETS/textfield_containers.dart';
 
 class PresetMetadataEditingPage extends StatefulWidget {
   final PresetModel presetModel;

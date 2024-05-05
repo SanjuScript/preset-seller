@@ -1,0 +1,130 @@
+import 'dart:developer';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:seller_app/CONSTANTS/assets.dart';
+import 'package:seller_app/DATA/admin_data.dart';
+import 'package:seller_app/FUNCTIONS/admin_data_controller_unit.dart';
+import 'package:seller_app/MODEL/preset_data_model.dart';
+
+final navigatorKey = GlobalKey<NavigatorState>();
+
+class NotificationApi {
+  static final _firebaseMessaging = FirebaseMessaging.instance;
+  static final FlutterLocalNotificationsPlugin
+      _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+
+  static Future<void> init() async {
+    await _firebaseMessaging.requestPermission(
+      alert: true,
+      announcement: true,
+      badge: true,
+      carPlay: false,
+      criticalAlert: true,
+      provisional: false,
+      sound: true,
+    );
+  }
+
+  static Future<String?> getDeviceToken({int maxRetires = 3}) async {
+    try {
+      String? token;
+      if (kIsWeb) {
+        // get the device fcm token
+        token = await _firebaseMessaging.getToken(
+            vapidKey:
+                "BPA9r_00LYvGIV9GPqkpCwfIl3Es4IfbGqE9CSrm6oeYJslJNmicXYHyWOZQMPlORgfhG8RNGe7hIxmbLXuJ92k");
+        log("for web device token: $token");
+      } else {
+        // get the device fcm token
+        token = await _firebaseMessaging.getToken();
+        log("for android device token: $token");
+      }
+      log(token.toString());
+      await AdminData.storeNotificationToken(token.toString());
+      return token;
+    } catch (e) {
+      log("failed to get device token");
+      if (maxRetires > 0) {
+        Fluttertoast.showToast(msg: "try after 10 sec");
+        await Future.delayed(const Duration(seconds: 10));
+        return getDeviceToken(maxRetires: maxRetires - 1);
+      } else {
+        return null;
+      }
+    }
+  }
+
+  static Future<void> localNotiInit() async {
+    // initialise the plugin. app_icon needs to be a added as a drawable resource to the Android head project
+    const AndroidInitializationSettings initializationSettingsAndroid =
+        AndroidInitializationSettings(
+      '@mipmap/ic_launcher',
+    );
+    final DarwinInitializationSettings initializationSettingsDarwin =
+        DarwinInitializationSettings(
+      onDidReceiveLocalNotification: (id, title, body, payload) => null,
+    );
+    const LinuxInitializationSettings initializationSettingsLinux =
+        LinuxInitializationSettings(defaultActionName: 'Open notification');
+    InitializationSettings initializationSettings = InitializationSettings(
+        android: initializationSettingsAndroid,
+        iOS: initializationSettingsDarwin,
+        linux: initializationSettingsLinux);
+
+    // request notification permissions for android 13 or above
+    _flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>()!
+        .requestNotificationsPermission();
+
+    _flutterLocalNotificationsPlugin.initialize(initializationSettings,
+        onDidReceiveNotificationResponse: onNotificationTap,
+        onDidReceiveBackgroundNotificationResponse: onNotificationTap);
+  }
+
+  static void onNotificationTap(
+      NotificationResponse notificationResponse) async {
+    if (notificationResponse.payload == "preset_uploaded" ||
+        notificationResponse.payload == "preset_upload_failure") {
+      navigatorKey.currentState!.pushNamed("/presetList");
+    } else if (notificationResponse.payload!.startsWith("preset_cover")) {
+      String docId = notificationResponse.payload!.split("_").last;
+      log(docId);
+      PresetModel? presetModel =
+          await DataController.getPresetModelForDocId(docId);
+      navigatorKey.currentState!
+          .pushNamed("/presetView", arguments: {"presetModel": presetModel});
+    } else {
+      navigatorKey.currentState!.pushNamed("/home");
+    }
+  }
+
+  static Future<void> showSimpleNotification({
+    required String title,
+    required String body,
+    required String payload,
+  }) async {
+    const AndroidNotificationDetails androidNotificationDetails =
+        AndroidNotificationDetails('com.ryanhansie.id', 'Admin notifier',
+            channelDescription: 'To notify the admins about their datas',
+            importance: Importance.max,
+            priority: Priority.high,
+            // styleInformation: bigPictureStyleInformation,
+            ticker: 'ticker');
+
+    //             const String filePath = GetAssetFile.rejectedIcon;
+    //  BigPictureStyleInformation bigPictureStyleInformation =
+    //     const BigPictureStyleInformation(FilePathAndroidBitmap(filePath),
+    //         largeIcon: FilePathAndroidBitmap(filePath));
+
+    const NotificationDetails notificationDetails =
+        NotificationDetails(android: androidNotificationDetails);
+    await _flutterLocalNotificationsPlugin
+        .show(0, title, body, notificationDetails, payload: payload);
+
+    log(payload);
+  }
+}

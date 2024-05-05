@@ -1,17 +1,17 @@
 import 'dart:developer';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:seller_app/API/auth_api.dart';
 import 'package:seller_app/FUNCTIONS/admin_data_controller_unit.dart';
-import 'package:seller_app/FUNCTIONS/files_upload_auth_functions.dart';
 import 'package:seller_app/HELPERS/color_helper.dart';
 import 'package:seller_app/MODEL/preset_data_model.dart';
 import 'package:seller_app/SCREENS/lightroom_presets/preset_view_page.dart';
+import 'package:seller_app/SCREENS/preset_pack_uploading_page.dart';
 import 'package:seller_app/SCREENS/preset_uploading_page.dart';
 import 'package:seller_app/WIDGETS/CARD/preset_card.dart';
 import 'package:seller_app/WIDGETS/Texts/helper_texts.dart';
+import 'package:seller_app/WIDGETS/pop_menu_button.dart';
 
 class PresetListPage extends StatefulWidget {
   const PresetListPage({super.key});
@@ -23,24 +23,44 @@ class PresetListPage extends StatefulWidget {
 class _PresetListPageState extends State<PresetListPage> {
   @override
   Widget build(BuildContext context) {
-    
     Size size = MediaQuery.of(context).size;
     return Scaffold(
       backgroundColor: getColor("#f2f2f2"),
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        title: HelperText1(
+          text: "Your Presets",
+          color: Colors.black87,
+          fontSize: size.width * .07,
+        ),
+        surfaceTintColor: Colors.transparent,
+        // backgroundColor: Colors.transparent,
+        actions: [
+          CustomPopupMenuButton(
+            text2: "Preset Pack",
+            text1: 'Single Preset',
+            iconData1: Icons.file_upload,
+            iconData2: Icons.file_upload,
+            mainIcon: Icons.add,
+            onItemSelected: (p0) async {
+              if (p0 == 'Single Preset') {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) =>
+                            const SinglePresetUploadingPage()));
+              } else {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const PresetPackUploadingPage()));
+              }
+            },
+          ),
+        ],
+      ),
       body: Column(
         children: [
-          const SizedBox(height: 50),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.0),
-            child: Text(
-              "Your Presets",
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
-            ),
-          ),
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
@@ -72,11 +92,6 @@ class _PresetListPageState extends State<PresetListPage> {
 
                     final presetModel = PresetModel.fromJson(data);
 
-                    log(presetModel.presets!.first.toString());
-                    // return Image.network(presetModel.presets![index]);
-
-                    // if (presetModel.presets != null) {
-                    // Handling for list presets
                     return PresetCard(
                       length: presetModel.presets?.length ?? 0,
                       isListed: presetModel.isList!,
@@ -87,18 +102,16 @@ class _PresetListPageState extends State<PresetListPage> {
                       tag: presetModel.presets.toString(),
                       onTap: () {
                         if (presetModel.status != "rejected") {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => PresetViewPage(
-                                presetModel: presetModel,
-                                docId: documents[index].id,
-                              ),
-                            ),
-                          );
+                          Navigator.pushNamed(context, "/presetView",
+                              arguments: {
+                                "presetModel": presetModel,
+                              });
+
+                          // DataController.deleteDocument(
+                          //     presetModel.docId.toString());
                         } else {
-                          DataController.downloadDNGFile(
-                              presetModel.presets!.last, "${presetModel.name}");
+                          // DataController.downloadDNGFile(
+                          //     presetModel.presets!.last, "${presetModel.name}");
                           // log(presetModel.presets!.last);
                         }
                       },
@@ -109,41 +122,6 @@ class _PresetListPageState extends State<PresetListPage> {
             ),
           ),
         ],
-      ),
-      floatingActionButton: InkWell(
-        onTap: () {
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => const SinglePresetUploadingPage()));
-        },
-        child: Container(
-          height: size.height * .10,
-          width: size.width * .40,
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black26,
-                offset: Offset(2, -2),
-                blurRadius: 10,
-              ),
-              BoxShadow(
-                color: Colors.black26,
-                offset: Offset(-2, 2),
-                blurRadius: 10,
-              ),
-            ],
-          ),
-          child: Center(
-            child: Icon(
-              Icons.add_rounded,
-              size: size.width * .10,
-              color: Colors.black87,
-            ),
-          ),
-        ),
       ),
     );
   }

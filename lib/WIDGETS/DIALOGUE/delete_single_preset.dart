@@ -36,10 +36,10 @@ class DeleteImageDialog extends StatelessWidget {
                 child: CachedNetworkImage(
                   fit: BoxFit.cover,
                   imageUrl: imageUrl,
-                  key: ValueKey(imageKey), // Use imageKey for unique caching
+                  // key: ValueKey(imageKey?? "NEW"), // Use imageKey for unique caching
                   placeholder: (context, url) =>
                       const CircularProgressIndicator(),
-                  errorWidget: (context, url, error) => const Icon(Icons.error),
+                  // errorWidget: (context, url, error) => const Icon(Icons.error),
                 ),
               ),
             ),

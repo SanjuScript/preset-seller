@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:seller_app/API/auth_api.dart';
 import 'package:seller_app/AUTHENTICATION/authentication_page.dart';
 import 'package:seller_app/SCREENS/bottom_nav.dart';
@@ -102,4 +103,48 @@ class LoginAuth {
           msg: 'Failed to create account. Please try again later.');
     }
   }
+
+  //google sign in
+  static Future<void> doGoogleSignIn(BuildContext context) async {
+  try {
+    final GoogleSignIn googleSignIn = GoogleSignIn();
+    
+    final GoogleSignInAccount? googleSignInAccount =
+        await googleSignIn.signIn();
+    if (googleSignInAccount != null) {
+      final GoogleSignInAuthentication googleSignInAuthentication =
+          await googleSignInAccount.authentication;
+      final AuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: googleSignInAuthentication.accessToken,
+        idToken: googleSignInAuthentication.idToken,
+      );
+      final UserCredential userCredential =
+          await FirebaseAuth.instance.signInWithCredential(credential);
+      User? user = userCredential.user;
+
+      if (user != null) {
+        if (user.emailVerified) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const BottomNav()),
+          );
+        } else {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const BottomNav()),
+          );
+          Fluttertoast.showToast(
+            msg: 'Please verify your email ',
+          );
+        }
+      }
+    }
+  } catch (e) {
+    print('Error signing in with Google: $e');
+    Fluttertoast.showToast(
+      msg: 'Google Sign-In failed. Please try again later.',
+    );
+  }
+}
+
 }

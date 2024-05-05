@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:seller_app/CONSTANTS/fonts.dart';
 import 'package:seller_app/PROVIDERS/password_visibility_provider.dart';
 
 class CustomTextField extends StatelessWidget {
@@ -61,10 +62,11 @@ class CustomTextField extends StatelessWidget {
             color: Colors.grey,
           ),
           hintStyle: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
+            fontSize: 15,
+            fontWeight: FontWeight.normal,
+            
             color: Color.fromARGB(74, 59, 59, 59),
-            fontFamily: 'hando',
+            fontFamily: Getfont.rounder,
           ),
         ),
       );

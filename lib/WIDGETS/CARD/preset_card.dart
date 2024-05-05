@@ -1,8 +1,11 @@
+import 'dart:developer';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:seller_app/CONSTANTS/assets.dart';
+import 'package:flutter/widgets.dart';
 import 'package:seller_app/EXTENSION/capitalize.dart';
+import 'package:seller_app/WIDGETS/STATUS_WIDGET/status_display.dart';
 
 class PresetCard extends StatelessWidget {
   final String url;
@@ -13,12 +16,14 @@ class PresetCard extends StatelessWidget {
   final void Function() onTap;
   final bool isListed;
   final String status;
+  final void Function()? onLongPress;
   const PresetCard(
       {super.key,
       required this.url,
       required this.tag,
       required this.presetName,
       required this.price,
+      this.onLongPress,
       required this.onTap,
       required this.isListed,
       required this.length,
@@ -29,6 +34,7 @@ class PresetCard extends StatelessWidget {
     Size size = MediaQuery.of(context).size;
     return InkWell(
       onTap: onTap,
+      onLongPress: onLongPress,
       child: Container(
         height: size.height * 0.25,
         width: size.width * 0.90,
@@ -61,10 +67,13 @@ class PresetCard extends StatelessWidget {
                   fit: BoxFit.cover,
                   placeholder: (context, url) =>
                       const CircularProgressIndicator(),
-                  errorWidget: (context, url, error) => const Icon(
-                    Icons.error,
-                    color: Colors.red,
-                  ),
+                  errorWidget: (context, url, error) {
+                    log(error.toString());
+                    return const Icon(
+                      Icons.error,
+                      color: Colors.red,
+                    );
+                  },
                 ),
               ),
             ),
@@ -83,65 +92,11 @@ class PresetCard extends StatelessWidget {
               ),
               child: Stack(
                 children: [
-                  Container(
-                    height: size.height * .04,
-                    width: size.width * .95,
-                    decoration: BoxDecoration(
-                      color: status == "pending"
-                          ? Colors.blue.withOpacity(.5)
-                          : status == "rejected"
-                              ? Colors.red.withOpacity(.5)
-                              : Colors.transparent,
-                      borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(25),
-                          topRight: Radius.circular(25)),
-                    ),
-                    child: status == "approved"
-                        ? Align(
-                            alignment: Alignment.centerLeft,
-                            child: Container(
-                              height: size.height * .04,
-                              width: size.width * .30,
-                              margin: const EdgeInsets.all(4),
-                              decoration: const BoxDecoration(
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(10)),
-                                color: Colors.white,
-                              ),
-                              child: Image.asset(GetAssetFile.approvedIcon)
-                            ),
-                          )
-                        : Center(
-                            child: Row(
-                              // mainAxisAlignment: MainAxisAlignment.start,
-                              children: [
-                                const SizedBox(
-                                  width: 20,
-                                ),
-                                Icon(
-                                  Icons.timelapse_rounded,
-                                  color: Colors.white,
-                                  size: size.width * 0.05,
-                                ),
-                                const SizedBox(
-                                  width: 10,
-                                ),
-                                Text(
-                                  status == "rejected"
-                                      ? "Rejected"
-                                      : "In review",
-                                  style: TextStyle(
-                                    fontSize: size.width * 0.03,
-                                    overflow: TextOverflow.ellipsis,
-                                    color: Colors.white,
-                                    fontFamily: 'hando',
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ],
-                            ),
-                          ),
-                  ),
+                  status == "approved"
+                      ? const ApprovedDisplay()
+                      : status == "pending"
+                          ? const ReviewDisplay()
+                          : const RejectedDisplay(),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [

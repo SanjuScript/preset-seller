@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:seller_app/CONSTANTS/fonts.dart';
 import 'package:seller_app/EXTENSION/capitalize.dart';
 
 class GetPresetUploadingButton extends StatelessWidget {
@@ -29,8 +30,8 @@ class GetPresetUploadingButton extends StatelessWidget {
             style: TextStyle(
               fontSize: size.width * 0.06,
               overflow: TextOverflow.ellipsis,
-              color: Colors.white,
-              fontFamily: 'hando',
+              color: Colors.white70,
+              fontFamily: Getfont.rounder,
             ),
             textAlign: TextAlign.center,
           ),

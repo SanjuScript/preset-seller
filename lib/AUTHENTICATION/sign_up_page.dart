@@ -1,23 +1,16 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:ui';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
-import 'package:seller_app/AUTHENTICATION/authentication_page.dart';
-import 'package:seller_app/AUTHENTICATION/login_page.dart';
-import 'package:seller_app/FUNCTIONS/profile_auth_functions.dart';
+import 'package:seller_app/CONSTANTS/fonts.dart';
 import 'package:seller_app/FUNCTIONS/login_auth_functions.dart';
 import 'package:seller_app/PROVIDERS/auth_page_controller_provider.dart';
 import 'package:seller_app/PROVIDERS/policy_status_checking_provider.dart';
-import 'package:seller_app/SCREENS/home_page.dart';
 import 'package:seller_app/WIDGETS/BUTTONS/login_buttons.dart';
-import 'package:seller_app/WIDGETS/DIALOGUE/verification_dialogue.dart';
 import 'package:seller_app/WIDGETS/Texts/helper_texts.dart';
 import 'package:seller_app/WIDGETS/custom_textfield.dart';
 import 'package:seller_app/WIDGETS/textfield_containers.dart';
@@ -204,9 +197,9 @@ class _SignUpPageState extends State<SignUpPage> {
                                   TextSpan(
                                     text: "By continuing you accept our ",
                                     style: const TextStyle(
-                                      fontFamily: 'hando',
+                                      fontFamily: Getfont.rounder,
                                       color: Colors.black54,
-                                      fontWeight: FontWeight.bold,
+                                      fontWeight: FontWeight.w200,
                                     ),
                                     children: [
                                       TextSpan(

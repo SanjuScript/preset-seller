@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:seller_app/CONSTANTS/fonts.dart';
 
 class HelperText1 extends StatelessWidget {
   final String text;
@@ -18,10 +19,10 @@ class HelperText1 extends StatelessWidget {
       text,
       style: TextStyle(
         fontSize: fontSize,
-        fontWeight: FontWeight.bold,
+        fontWeight: FontWeight.normal,
         color: color,
         decoration: decoration,
-        fontFamily: 'hando',
+        fontFamily: Getfont.rounder,
       ),
       textAlign: TextAlign.center,
     );
@@ -49,7 +50,7 @@ class HelperText3 extends StatelessWidget {
         fontWeight: FontWeight.bold,
         color: color,
         decoration: decoration,
-        fontFamily: 'hando',
+        fontFamily: Getfont.rounder,
       ),
       textAlign: TextAlign.start,
     );

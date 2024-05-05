@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_file_downloader/flutter_file_downloader.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:seller_app/API/auth_api.dart';
+import 'package:seller_app/MODEL/preset_data_model.dart';
 
 class DataController {
   static bool isUploading = false;
@@ -147,5 +148,27 @@ static Future<void> deleteCoverImageByUrl({
     );
   }
 }
+
+static Future<PresetModel?> getPresetModelForDocId(String docId) async {
+  try {
+    DocumentSnapshot snapshot = await FirebaseFirestore.instance
+        .collection('admins')
+        .doc(AuthApi.auth.currentUser!.uid)
+        .collection('lightroom_presets')
+        .doc(docId)
+        .get();
+    
+    if (snapshot.exists) {
+      final data = snapshot.data() as Map<String, dynamic>;
+      return PresetModel.fromJson(data);
+    } else {
+      return null;
+    }
+  } catch (e) {
+    print('Error fetching PresetModel for docId: $e');
+    return null;
+  }
+}
+
 
 }

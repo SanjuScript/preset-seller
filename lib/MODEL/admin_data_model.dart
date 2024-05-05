@@ -3,19 +3,21 @@ class AdminProfile {
   final String? uid;
   final String? lastName;
   final String? email;
-  final String? phone;
   final String? userProfileUrl;
   final String? description;
   final String? instagram;
+  final int? earned;
+  final int? likes;
 
   AdminProfile(
       {this.firstName,
       this.uid,
       this.lastName,
       this.email,
-      this.phone,
       this.userProfileUrl,
       this.description,
+      this.likes ,
+      this.earned,
       this.instagram});
 
   factory AdminProfile.fromMap(Map<String, dynamic> map) {
@@ -23,8 +25,9 @@ class AdminProfile {
       firstName: map['firstname'] ?? '',
       uid: map['uid'] ?? '',
       lastName: map['lastname'] ?? '',
+      earned: map['earned'],
+      likes: map['likes'],
       email: map['email'] ?? '',
-      phone: map['phone'] ?? '',
       userProfileUrl: map['profile_picture'] ?? '',
       description: map['description'] ?? '',
       instagram: map['instagram'] ?? '',
