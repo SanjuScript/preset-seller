@@ -1,4 +1,3 @@
-import 'dart:developer';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -9,17 +8,18 @@ import 'package:seller_app/API/auth_api.dart';
 import 'package:seller_app/CONSTANTS/assets.dart';
 import 'package:seller_app/CONSTANTS/fonts.dart';
 import 'package:seller_app/DATA/update_data.dart';
-import 'package:seller_app/FUNCTIONS/login_auth_functions.dart';
+import 'package:seller_app/FUNCTIONS/wallet_access_function.dart';
 import 'package:seller_app/HELPERS/color_helper.dart';
 import 'package:seller_app/HELPERS/date_helper.dart';
 import 'package:seller_app/MODEL/admin_data_model.dart';
 import 'package:seller_app/PROVIDERS/user_profile_provider.dart';
 import 'package:seller_app/SCREENS/profile_editing_page.dart';
+import 'package:seller_app/SCREENS/wallet/wallet_page.dart';
 import 'package:seller_app/WIDGETS/BUTTONS/preset_uploading.button.dart';
+import 'package:seller_app/WIDGETS/BUTTONS/verification_widget.dart';
 import 'package:seller_app/WIDGETS/profile_element.dart';
 import 'package:seller_app/WIDGETS/profile_image.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:url_launcher/url_launcher_string.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -31,7 +31,7 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage>
     with AutomaticKeepAliveClientMixin {
   late UserProfileProvider userProfile;
-
+  bool isVerified = AuthApi.auth.currentUser!.emailVerified;
   @override
   void initState() {
     super.initState();
@@ -54,8 +54,6 @@ class _ProfilePageState extends State<ProfilePage>
           } else {
             final adminProfile = snapshot.data!;
             int? uploadedCount = userProfile.uploadedCount;
-            // log(userProfile.description!.length.toString());
-            // descriptionController.addListener(onDescriptionChanged);
 
             return SingleChildScrollView(
               padding: const EdgeInsets.all(10),
@@ -67,7 +65,6 @@ class _ProfilePageState extends State<ProfilePage>
                   ),
                   Center(
                     child: SizedBox(
-                      // color: Colors.red[200],
                       height: size.height * .28,
                       width: size.width,
                       child: Padding(
@@ -103,7 +100,7 @@ class _ProfilePageState extends State<ProfilePage>
                                             textAlign: TextAlign.center,
                                           ),
                                           Text(
-                                            "Joined on ${formatDate(AuthApi.auth.currentUser!.metadata.creationTime)}",
+                                            "Joined on ${DataFormateHelper.formatDate(AuthApi.auth.currentUser!.metadata.creationTime)}",
                                             style: TextStyle(
                                                 fontSize: size.width * 0.03,
                                                 overflow: TextOverflow.ellipsis,
@@ -134,6 +131,10 @@ class _ProfilePageState extends State<ProfilePage>
                       ),
                     ),
                   ),
+                  if (!isVerified)
+                    const Center(
+                      child: EmailNotverified(),
+                    ),
                   SizedBox(
                     height: size.height * .11,
                     width: size.width * .90,
@@ -165,8 +166,8 @@ class _ProfilePageState extends State<ProfilePage>
                       width: size.width * .85,
                       child: GetPresetUploadingButton(
                         onPressed: () {
-                          // UpdateAdminData.deleteProfilePicture();
-
+                          WalletController.createWalletCollection(
+                              adminProfile.uid.toString());
                           Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -177,7 +178,29 @@ class _ProfilePageState extends State<ProfilePage>
                       ),
                     ),
                   ),
-                  SizedBox(
+                  const SizedBox(
+                    height: 15,
+                  ),
+                  Center(
+                    child: SizedBox(
+                      width: size.width * .85,
+                      child: GetPresetUploadingButton(
+                        color: Colors.white,
+                        textColor: Colors.black87,
+                        onPressed: () {
+                          // WalletController.createWalletCollection(
+                          //     adminProfile.uid.toString());
+
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>  WalletPage()));
+                        },
+                        text: "Your Balance \$",
+                      ),
+                    ),
+                  ),
+                  const SizedBox(
                     height: 10,
                   ),
                   adminProfile.instagram == null ||
@@ -192,7 +215,7 @@ class _ProfilePageState extends State<ProfilePage>
                                   Uri.parse(adminProfile.instagram.toString()));
                             }
                           },
-                          title: Text("Instagram"),
+                          title: const Text("Instagram"),
                           leading: SvgPicture.asset(
                             GetAssetFile.instaIcon,
                             height: size.height * 0.04,
@@ -214,7 +237,7 @@ class _ProfilePageState extends State<ProfilePage>
                           adminProfile.description!.isEmpty
                       ? const SizedBox()
                       : ListTile(
-                          title: Text("Description"),
+                          title: const Text("Description"),
                           leading: Icon(
                             Icons.description_rounded,
                             color: Colors.green[300],
@@ -231,31 +254,6 @@ class _ProfilePageState extends State<ProfilePage>
                           ),
                         ),
                   const SizedBox(height: 10),
-                  Center(
-                    child: InkWell(
-                      onTap: () {},
-                      child: Container(
-                        height: size.height * .09,
-                        width: size.width * .85,
-                        decoration: BoxDecoration(
-                          color: Colors.black45,
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                        child: Center(
-                          child: Text(
-                            "Add Payment info",
-                            style: TextStyle(
-                              fontSize: size.width * 0.06,
-                              overflow: TextOverflow.ellipsis,
-                              color: Colors.white,
-                              fontFamily: 'hando',
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
                   const SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: () {

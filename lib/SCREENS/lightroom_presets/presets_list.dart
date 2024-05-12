@@ -7,9 +7,10 @@ import 'package:seller_app/FUNCTIONS/admin_data_controller_unit.dart';
 import 'package:seller_app/HELPERS/color_helper.dart';
 import 'package:seller_app/MODEL/preset_data_model.dart';
 import 'package:seller_app/SCREENS/lightroom_presets/preset_view_page.dart';
-import 'package:seller_app/SCREENS/preset_pack_uploading_page.dart';
-import 'package:seller_app/SCREENS/preset_uploading_page.dart';
+import 'package:seller_app/SCREENS/preset_uploading/preset_pack_uploading_page.dart';
+import 'package:seller_app/SCREENS/preset_uploading/preset_uploading_page.dart';
 import 'package:seller_app/WIDGETS/CARD/preset_card.dart';
+import 'package:seller_app/WIDGETS/DIALOGUE/delete_preset_pack.dart';
 import 'package:seller_app/WIDGETS/Texts/helper_texts.dart';
 import 'package:seller_app/WIDGETS/pop_menu_button.dart';
 
@@ -78,20 +79,22 @@ class _PresetListPageState extends State<PresetListPage> {
                 }
 
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  return const Center(child: Text('No presets available'));
+                  return const Center(
+                      child: HelperText1(
+                    text: "No presets available",
+                    color: Colors.black87,
+                  ));
                 }
 
                 final documents = snapshot.data!.docs;
+                log(documents[0].data().toString());
 
                 return ListView.builder(
                   itemCount: documents.length,
                   itemBuilder: (context, index) {
                     final data =
                         documents[index].data() as Map<String, dynamic>;
-                    // log(data.toString());
-
                     final presetModel = PresetModel.fromJson(data);
-
                     return PresetCard(
                       length: presetModel.presets?.length ?? 0,
                       isListed: presetModel.isList!,
@@ -100,15 +103,19 @@ class _PresetListPageState extends State<PresetListPage> {
                       price: presetModel.price.toString(),
                       status: presetModel.status.toString(),
                       tag: presetModel.presets.toString(),
+                      onLongPress: () {
+                        showPresetpackDeletionDialog(context, onTap: () {
+                          DataController.deleteDocument(
+                              presetModel.docId.toString());
+                          Navigator.pop(context);
+                        });
+                      },
                       onTap: () {
                         if (presetModel.status != "rejected") {
                           Navigator.pushNamed(context, "/presetView",
                               arguments: {
                                 "presetModel": presetModel,
                               });
-
-                          // DataController.deleteDocument(
-                          //     presetModel.docId.toString());
                         } else {
                           // DataController.downloadDNGFile(
                           //     presetModel.presets!.last, "${presetModel.name}");

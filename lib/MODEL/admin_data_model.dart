@@ -1,6 +1,7 @@
 class AdminProfile {
   final String? firstName;
   final String? uid;
+  final bool? isPaymentSet;
   final String? lastName;
   final String? email;
   final String? userProfileUrl;
@@ -16,7 +17,8 @@ class AdminProfile {
       this.email,
       this.userProfileUrl,
       this.description,
-      this.likes ,
+      this.isPaymentSet,
+      this.likes,
       this.earned,
       this.instagram});
 
@@ -27,6 +29,7 @@ class AdminProfile {
       lastName: map['lastname'] ?? '',
       earned: map['earned'],
       likes: map['likes'],
+      isPaymentSet: map['isPaymentSet'],
       email: map['email'] ?? '',
       userProfileUrl: map['profile_picture'] ?? '',
       description: map['description'] ?? '',

@@ -127,4 +127,62 @@ class NotificationApi {
 
     log(payload);
   }
+
+ static void showProgressNotification({
+  required String title,
+  required String body,
+  required int id,
+}) {
+  AndroidNotificationDetails androidNotificationDetails =
+      const AndroidNotificationDetails(
+    'com.ryanhansie.id',
+    'progress',
+    channelDescription: 'To notify the admins about their datas',
+    importance: Importance.max,
+    priority: Priority.high,
+    // Do not set progress, maxProgress, and indeterminate here
+  );
+
+  NotificationDetails notificationDetails =
+      NotificationDetails(android: androidNotificationDetails);
+  _flutterLocalNotificationsPlugin.show(
+    id,
+    title,
+    body,
+    notificationDetails,
+    payload: 'upload_progress',
+  );
+}
+
+static void updateProgressNotification({
+  required int id,
+  required double progress,
+}) {
+  AndroidNotificationDetails androidNotificationDetails =
+      AndroidNotificationDetails(
+    'com.ryanhansie.id',
+    'progress',
+    channelDescription: 'To notify the admins about their datas',
+    importance: Importance.max,
+    priority: Priority.high,
+    progress: progress.toInt(),
+    maxProgress: 100,
+    indeterminate: false,
+  );
+
+  NotificationDetails notificationDetails =
+      NotificationDetails(android: androidNotificationDetails);
+  _flutterLocalNotificationsPlugin.show(
+    id,
+    'Uploading Presets',
+    'Uploading in progress...',
+    notificationDetails,
+    payload: 'upload_progress',
+  );
+}
+
+static void removeNotification({required int id}) {
+  _flutterLocalNotificationsPlugin.cancel(id);
+}
+
 }

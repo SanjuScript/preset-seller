@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:seller_app/WIDGETS/Texts/helper_texts.dart';
 
@@ -8,6 +9,7 @@ class ProfileEditingFields extends StatelessWidget {
   final bool isInsta;
   final TextEditingController controller;
   final String upText;
+  final Color color;
   final TextInputType textInputType;
   final String hintText;
   final bool isNeed;
@@ -17,6 +19,7 @@ class ProfileEditingFields extends StatelessWidget {
       required this.isDesc,
       required this.controller,
       required this.isNeed,
+      this.color =  Colors.white70,
       required this.textInputType,
       required this.upText,
       required this.hintText,
@@ -41,7 +44,7 @@ class ProfileEditingFields extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 8),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(.8),
+            color:color,
             borderRadius: BorderRadius.circular(15),
           ),
           child: Center(

@@ -9,6 +9,7 @@ import 'package:mime/mime.dart';
 import 'package:seller_app/API/auth_api.dart';
 import 'package:path/path.dart' as p;
 import 'package:seller_app/API/notification_handling_api.dart';
+import 'package:seller_app/CONTROLLER/network_controller.dart';
 
 class DataUploadAdmin {
   static bool isUploading = false;
@@ -31,8 +32,32 @@ class DataUploadAdmin {
 
     try {
       isUploading = true;
+
+      int totalFiles = presetData.length + coverImages.length;
+      int uploadedFiles = 0;
+
+      if (!await NetworkInterceptor().isNetworkAvailable()) {
+        Fluttertoast.showToast(
+          msg:
+              'No internet connection. Please connect to the internet and try again.',
+          backgroundColor: Colors.red,
+        );
+        return;
+      }
+
+      NotificationApi.showProgressNotification(
+        id: 0,
+        title: 'Uploading Presets',
+        body: 'Uploading in progress...',
+      );
       List<String> presetImagesUrls = [];
       for (File file in presetData) {
+        uploadedFiles++;
+        double progress = uploadedFiles / totalFiles * 100;
+        NotificationApi.updateProgressNotification(
+          id: 0,
+          progress: progress,
+        );
         final extension = p.extension(file.path);
         log("Extension:$extension");
         String? mimeType = lookupMimeType(file.path);
@@ -59,6 +84,12 @@ class DataUploadAdmin {
 
       List<String> coverImagesUrls = [];
       for (int i = 0; i < coverImages.length; i++) {
+        uploadedFiles++;
+        double progress = uploadedFiles / totalFiles * 100;
+        NotificationApi.updateProgressNotification(
+          id: 0,
+          progress: progress,
+        );
         var coverImageuploadTask = AuthApi.storage
             .ref()
             .child('lr_presets/${AuthApi.auth.currentUser!.uid}/'
@@ -74,7 +105,7 @@ class DataUploadAdmin {
         var coverImageUrl = await coverImageSnapshot.ref.getDownloadURL();
         coverImagesUrls.add(coverImageUrl);
       }
-
+      NotificationApi.removeNotification(id: 0);
       DocumentReference docRef = await AuthApi.admins
           .doc(AuthApi.auth.currentUser!.uid)
           .collection('lightroom_presets')
@@ -276,20 +307,12 @@ class DataUploadAdmin {
     required bool isListedPreset,
   }) async {
     try {
-
-      //  await NotificationApi.showSimpleNotification(
-      //       title: "Upload Success",
-      //       body:
-      //           "Your newly added images are successfully uploaded to ",
-      //       payload: "preset_cover_uploaded_$docId", // Include docId in the payload
-      //     );
       FilePickerResult? result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         compressionQuality: 35,
         allowMultiple: true,
         allowedExtensions: ['jpg', 'jpeg'],
       );
-        
 
       final xfilePicks = result!.xFiles;
 
@@ -358,7 +381,8 @@ class DataUploadAdmin {
             title: "Upload Success",
             body:
                 "Your newly added images are successfully uploaded to $presetName",
-            payload: "preset_cover_uploaded_$docId", // Include docId in the payload
+            payload:
+                "preset_cover_uploaded_$docId", // Include docId in the payload
           );
 
           log('New cover images added successfully');

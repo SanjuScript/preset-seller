@@ -54,7 +54,6 @@ class DataController {
   static Future<void> downloadDNGFile(
       String downloadUrl, String presetName) async {
     try {
-      
       log(presetName);
       String filenameWithAppName =
           'seller_app_$presetName'; // Specify the file extension as .dng
@@ -95,80 +94,89 @@ class DataController {
       // Delete the document
       await documentRef.delete();
 
-      Fluttertoast.showToast(msg: 'Document deleted successfully');
+      Fluttertoast.showToast(msg: 'Preset Pack deleted successfully');
     } catch (e) {
       debugPrint('Error deleting document: $e');
       Fluttertoast.showToast(
-        msg: 'Failed to delete document. Please try again.',
+        msg: 'Failed to delete Preset. Please try again.',
         backgroundColor: Colors.red,
       );
     }
   }
 
-static Future<void> deleteCoverImageByUrl({
-  required String docId,
-  required String coverImageUrl,
-}) async {
-  try {
-    log('Deleting coverImage. Document ID: $docId, coverImage URL: $coverImageUrl');
+  static Future<void> updatePaymentStatus(bool isPaymentSet) async {
+    try {
+      await FirebaseFirestore.instance.collection('admins').doc(AuthApi.auth.currentUser!.uid).update({
+        'isPaymentSet': isPaymentSet,
+      });
+    } catch (e) {
+      log('Error updating payment status: $e');
+      
+    }
+  }
 
-    DocumentReference documentRef =
-        AuthApi.documentRef.collection('lightroom_presets').doc(docId);
+  static Future<void> deleteCoverImageByUrl({
+    required String docId,
+    required String coverImageUrl,
+  }) async {
+    try {
+      log('Deleting coverImage. Document ID: $docId, coverImage URL: $coverImageUrl');
 
-    // Fetch the current coverImages array
-    DocumentSnapshot snapshot = await documentRef.get();
-    Map<String, dynamic>? data = snapshot.data() as Map<String, dynamic>?;
+      DocumentReference documentRef =
+          AuthApi.documentRef.collection('lightroom_presets').doc(docId);
 
-    if (data != null && data.containsKey('coverImages')) {
-      List<dynamic>? coverImagesData = data['coverImages'] as List<dynamic>?;
+      // Fetch the current coverImages array
+      DocumentSnapshot snapshot = await documentRef.get();
+      Map<String, dynamic>? data = snapshot.data() as Map<String, dynamic>?;
 
-      if (coverImagesData != null) {
-        List<String> coverImages = List<String>.from(coverImagesData);
+      if (data != null && data.containsKey('coverImages')) {
+        List<dynamic>? coverImagesData = data['coverImages'] as List<dynamic>?;
 
-        // Ensure that the array has at least one cover image
-        if (coverImages.length > 1) {
-          // Remove the specified cover image URL from the coverImages array
-          await documentRef.update({
-            'coverImages': FieldValue.arrayRemove([coverImageUrl]),
-          });
+        if (coverImagesData != null) {
+          List<String> coverImages = List<String>.from(coverImagesData);
 
-          log('CoverImage deleted successfully');
-          Fluttertoast.showToast(msg: 'CoverImage deleted successfully');
-        } else {
-          log('At least one cover image must remain');
-          Fluttertoast.showToast(msg: 'At least one cover image must remain');
+          // Ensure that the array has at least one cover image
+          if (coverImages.length > 1) {
+            // Remove the specified cover image URL from the coverImages array
+            await documentRef.update({
+              'coverImages': FieldValue.arrayRemove([coverImageUrl]),
+            });
+
+            log('CoverImage deleted successfully');
+            Fluttertoast.showToast(msg: 'CoverImage deleted successfully');
+          } else {
+            log('At least one cover image must remain');
+            Fluttertoast.showToast(msg: 'At least one cover image must remain');
+          }
         }
       }
+    } catch (e) {
+      log('Error deleting CoverImage: $e');
+      debugPrint('Error deleting CoverImage: $e');
+      Fluttertoast.showToast(
+        msg: 'Failed to delete CoverImage. Please try again.',
+      );
     }
-  } catch (e) {
-    log('Error deleting CoverImage: $e');
-    debugPrint('Error deleting CoverImage: $e');
-    Fluttertoast.showToast(
-      msg: 'Failed to delete CoverImage. Please try again.',
-    );
   }
-}
 
-static Future<PresetModel?> getPresetModelForDocId(String docId) async {
-  try {
-    DocumentSnapshot snapshot = await FirebaseFirestore.instance
-        .collection('admins')
-        .doc(AuthApi.auth.currentUser!.uid)
-        .collection('lightroom_presets')
-        .doc(docId)
-        .get();
-    
-    if (snapshot.exists) {
-      final data = snapshot.data() as Map<String, dynamic>;
-      return PresetModel.fromJson(data);
-    } else {
+  static Future<PresetModel?> getPresetModelForDocId(String docId) async {
+    try {
+      DocumentSnapshot snapshot = await FirebaseFirestore.instance
+          .collection('admins')
+          .doc(AuthApi.auth.currentUser!.uid)
+          .collection('lightroom_presets')
+          .doc(docId)
+          .get();
+
+      if (snapshot.exists) {
+        final data = snapshot.data() as Map<String, dynamic>;
+        return PresetModel.fromJson(data);
+      } else {
+        return null;
+      }
+    } catch (e) {
+      print('Error fetching PresetModel for docId: $e');
       return null;
     }
-  } catch (e) {
-    print('Error fetching PresetModel for docId: $e');
-    return null;
   }
-}
-
-
 }

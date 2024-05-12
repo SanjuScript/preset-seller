@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:developer';
-import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -9,7 +8,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
-import 'package:seller_app/API/auth_api.dart';
 import 'package:seller_app/API/notification_handling_api.dart';
 import 'package:seller_app/PROVIDERS/auth_page_controller_provider.dart';
 import 'package:seller_app/PROVIDERS/bottom_nav_provider.dart';
@@ -20,11 +18,12 @@ import 'package:seller_app/PROVIDERS/permission_provider.dart';
 import 'package:seller_app/PROVIDERS/policy_status_checking_provider.dart';
 import 'package:seller_app/PROVIDERS/user_profile_provider.dart';
 import 'package:seller_app/SCREENS/bottom_nav.dart';
-import 'package:seller_app/SCREENS/home_page.dart';
 import 'package:seller_app/SCREENS/lightroom_presets/preset_view_page.dart';
 import 'package:seller_app/SCREENS/lightroom_presets/presets_list.dart';
+import 'package:seller_app/SCREENS/preset_uploading/preset_uploading_policy.dart';
 import 'package:seller_app/firebase_options.dart';
 
+final GlobalKey<NavigatorState> authPageControllerKey = GlobalKey();
 Future _firebaseBackgroundMessage(RemoteMessage message) async {
   if (message.notification != null) {
     log("Some notification Received in background...");
@@ -59,7 +58,7 @@ Future<void> main() async {
   await NotificationApi.localNotiInit();
   await NotificationApi.getDeviceToken();
   await dotenv.load(fileName: ".env");
-
+  // DependencyInjection.init();
   FirebaseMessaging.onBackgroundMessage(_firebaseBackgroundMessage);
   FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
     if (message.notification != null) {
@@ -147,6 +146,7 @@ class MyApp extends StatelessWidget {
         "/home": (context) => const BottomNav(),
         "/presetList": (context) => const PresetListPage(),
         "/presetView": (context) => const PresetViewPage(),
+        "/presetPolicy": (context) => const PresetUploadPolicy(),
       },
       home: StreamBuilder<User?>(
         stream: _auth.authStateChanges(),
@@ -154,7 +154,6 @@ class MyApp extends StatelessWidget {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Scaffold(body: CircularProgressIndicator());
           }
-
           if (snapshot.hasData && snapshot.data != null) {
             return const BottomNav();
           } else {

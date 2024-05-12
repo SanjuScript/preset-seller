@@ -1,7 +1,7 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:seller_app/API/auth_api.dart';
 import 'package:seller_app/WIDGETS/Texts/helper_texts.dart';
-import 'package:seller_app/main.dart';
 
 class CustomPopupMenuButton extends StatelessWidget {
   final Function(String) onItemSelected;
@@ -23,34 +23,40 @@ class CustomPopupMenuButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    bool isVerified = AuthApi.auth.currentUser!.emailVerified;
+
     return GestureDetector(
       onTap: () {
-        _showPopupMenu(context);
+        if (isVerified) {
+          _showPopupMenu(context);
+        } else {
+          Fluttertoast.showToast(msg: "PLease verify your email before you go");
+        }
       },
       child: text1 != "Single Preset"
           ? Icon(mainIcon)
           : Container(
-            margin: EdgeInsets.symmetric(horizontal: 10),
+              margin: const EdgeInsets.symmetric(horizontal: 10),
               height: 40,
               width: 90,
               decoration: BoxDecoration(
-              color: Colors.black87,
-              borderRadius: BorderRadius.circular(20)
-
-              ),
-              child: Center(
+                  color: Colors.black87,
+                  borderRadius: BorderRadius.circular(20)),
+              child:  const Center(
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      HelperText1(
-                                      text: "Add",
-                                      color: Colors.white70,
-                                      fontSize: 15,
-                                    ),
-                      Icon(Icons.add,color: Colors.white70,)
-
-                    ],
-                  )),
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  HelperText1(
+                    text: "Add",
+                    color: Colors.white70,
+                    fontSize: 15,
+                  ),
+                  Icon(
+                    Icons.add,
+                    color: Colors.white70,
+                  )
+                ],
+              )),
             ),
     );
   }
@@ -72,8 +78,9 @@ class CustomPopupMenuButton extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(15),
       ),
-      elevation: 5,
+      elevation: 7,
       color: Colors.white,
+      surfaceTintColor: Colors.white,
       context: context,
       position: position,
       items: [

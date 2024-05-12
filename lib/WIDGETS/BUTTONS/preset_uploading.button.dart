@@ -6,9 +6,11 @@ class GetPresetUploadingButton extends StatelessWidget {
   final void Function() onPressed;
   final String text;
   final Color color;
+  final Color textColor;
   const GetPresetUploadingButton(
       {super.key,
       required this.onPressed,
+      this.textColor =  Colors.white70,
       this.color = Colors.black87,
       required this.text});
 
@@ -30,7 +32,7 @@ class GetPresetUploadingButton extends StatelessWidget {
             style: TextStyle(
               fontSize: size.width * 0.06,
               overflow: TextOverflow.ellipsis,
-              color: Colors.white70,
+              color:textColor,
               fontFamily: Getfont.rounder,
             ),
             textAlign: TextAlign.center,

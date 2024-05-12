@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:seller_app/API/notification_handling_api.dart';
 import 'package:seller_app/PROVIDERS/bottom_nav_provider.dart';
 import 'package:seller_app/SCREENS/home_page.dart';
+import 'package:seller_app/SCREENS/order_details/orders.dart';
 import 'package:seller_app/SCREENS/profile_page.dart';
 
 class BottomNav extends StatefulWidget {
@@ -15,7 +16,7 @@ class BottomNav extends StatefulWidget {
 }
 
 class _BottomNavState extends State<BottomNav> {
-  int selectedIndex = 0;
+  int selectedIndex = 1;
   late PageController pageController;
   late List<Widget> pages = [];
   void onPageChange(int index) {
@@ -33,7 +34,11 @@ class _BottomNavState extends State<BottomNav> {
     super.initState();
     final provider = context.read<BottomNavProvider>();
     pageController = provider.createPageController();
-    pages = [const HomeScreen(), const ProfilePage()];
+    pages = [
+      const OrdersPage(),
+      const HomeScreen(),
+      const ProfilePage(),
+    ];
   }
 
   @override
@@ -46,12 +51,14 @@ class _BottomNavState extends State<BottomNav> {
   Widget build(BuildContext context) {
     log('Bottom Nav rebuilded');
     final provider = context.watch<BottomNavProvider>();
+    log(provider.selectedIndex.toString());
     return PopScope(
-      canPop: selectedIndex == 0,
+      canPop: provider.selectedIndex == 1,
       onPopInvoked: (didPop) {
-        if (selectedIndex != 0) {
-          navigateToPage(0);
+        if (didPop) {
+          return;
         }
+        navigateToPage(1);
       },
       child: Scaffold(
         extendBody: true,
@@ -76,45 +83,44 @@ class _BottomNavState extends State<BottomNav> {
             ),
           ),
         ),
-        bottomNavigationBar: ClipRect(
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-            child: Theme(
-              data: Theme.of(context).copyWith(
-                canvasColor: const Color(0xFFFAFAFA),
+        bottomNavigationBar: Theme(
+          data: Theme.of(context).copyWith(
+            canvasColor: const Color(0xFFFAFAFA),
+          ),
+          child: SizedBox(
+            height: MediaQuery.of(context).size.height * 0.085,
+            child: BottomNavigationBar(
+              showUnselectedLabels: false,
+              unselectedItemColor: Color.fromARGB(255, 148, 148, 148),
+              selectedFontSize: MediaQuery.of(context).size.height * 0.01,
+              selectedItemColor: Colors.black87,
+              selectedLabelStyle: const TextStyle(
+                fontWeight: FontWeight.bold,
+                letterSpacing: 0.5,
               ),
-              child: SizedBox(
-                height: MediaQuery.of(context).size.height * 0.085,
-                child: BottomNavigationBar(
-                  showUnselectedLabels: false,
-                  unselectedItemColor: const Color.fromARGB(255, 63, 63, 63),
-                  selectedFontSize: MediaQuery.of(context).size.height * 0.01,
-                  selectedItemColor: Colors.deepPurple[400],
-                  selectedLabelStyle: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 0.5,
-                  ),
-                  currentIndex: provider.selectedIndex,
-                  onTap: (int index) {
-                    provider.selectedIndex = index;
-                    if (index != 0) {
-                      // NotificationApi.showPresetUploadedNotification();
-                    }
+              currentIndex: provider.selectedIndex,
+              onTap: (int index) {
+                provider.selectedIndex = index;
+                if (index != 0) {
+                  // NotificationApi.showPresetUploadedNotification();
+                }
 
-                    navigateToPage(index);
-                  },
-                  items: <BottomNavigationBarItem>[
-                    bottomNavBarMethod(
-                      bottomNavBarIcon: Icons.home,
-                      bottomNavBarLabel: 'Home',
-                    ),
-                    bottomNavBarMethod(
-                      bottomNavBarIcon: Icons.person_2_rounded,
-                      bottomNavBarLabel: 'Profile',
-                    ),
-                  ],
+                navigateToPage(index);
+              },
+              items: <BottomNavigationBarItem>[
+                bottomNavBarMethod(
+                  bottomNavBarIcon: Icons.receipt_long_rounded,
+                  bottomNavBarLabel: 'Orders',
                 ),
-              ),
+                bottomNavBarMethod(
+                  bottomNavBarIcon: Icons.home,
+                  bottomNavBarLabel: 'Home',
+                ),
+                bottomNavBarMethod(
+                  bottomNavBarIcon: Icons.person_2_rounded,
+                  bottomNavBarLabel: 'Profile',
+                ),
+              ],
             ),
           ),
         ),

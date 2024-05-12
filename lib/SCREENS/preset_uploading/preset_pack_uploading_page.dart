@@ -2,26 +2,26 @@ import 'dart:developer';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:seller_app/EXTENSION/capitalize.dart';
 import 'package:seller_app/FUNCTIONS/files_upload_auth_functions.dart';
 import 'package:seller_app/HELPERS/color_helper.dart';
+import 'package:seller_app/WIDGETS/BUTTONS/preset_privacy_button.dart';
 import 'package:seller_app/WIDGETS/BUTTONS/preset_uploading.button.dart';
 import 'package:seller_app/WIDGETS/Texts/helper_texts.dart';
 import 'dart:math' as math;
 
 import 'package:seller_app/WIDGETS/editing_fields.dart';
 
-class SinglePresetUploadingPage extends StatefulWidget {
-  const SinglePresetUploadingPage({super.key});
+class PresetPackUploadingPage extends StatefulWidget {
+  const PresetPackUploadingPage({super.key});
 
   @override
-  State<SinglePresetUploadingPage> createState() =>
-      _SinglePresetUploadingPageState();
+  State<PresetPackUploadingPage> createState() =>
+      _PresetPackUploadingPageState();
 }
 
-class _SinglePresetUploadingPageState extends State<SinglePresetUploadingPage> {
-  File? _image;
+class _PresetPackUploadingPageState extends State<PresetPackUploadingPage> {
   List<File> selectedImages = [];
   List<File> presetAdd = [];
   ScrollController scrollController = ScrollController();
@@ -29,7 +29,32 @@ class _SinglePresetUploadingPageState extends State<SinglePresetUploadingPage> {
   TextEditingController presetPriceController = TextEditingController();
   TextEditingController presetDescriptionController = TextEditingController();
 
-  Future<void> getListOfImages() async {
+  Future<void> getPresetImages() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      compressionQuality: 35,
+      allowMultiple: true,
+      allowedExtensions: ['dng'],
+    );
+
+    final xfilePicks = result!.xFiles;
+
+    setState(() {
+      if (xfilePicks != null) {
+        for (var i = 0; i < xfilePicks.length; i++) {
+          if (presetAdd.length < 10) {
+            presetAdd.add(File(xfilePicks[i].path));
+          } else {
+            break;
+          }
+        }
+      } else {
+        Fluttertoast.showToast(msg: 'Nothing is selected');
+      }
+    });
+  }
+
+  Future<void> getCoverImages() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       compressionQuality: 35,
@@ -42,7 +67,7 @@ class _SinglePresetUploadingPageState extends State<SinglePresetUploadingPage> {
     setState(() {
       if (xfilePicks != null) {
         for (var i = 0; i < xfilePicks.length; i++) {
-          if (selectedImages.length < 4) {
+          if (selectedImages.length < 12) {
             selectedImages.add(File(xfilePicks[i].path));
           } else {
             break;
@@ -54,31 +79,6 @@ class _SinglePresetUploadingPageState extends State<SinglePresetUploadingPage> {
     });
   }
 
-  Future<void> getImage() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      compressionQuality: 0,
-      allowCompression: false,
-      allowedExtensions: [
-        'dng',
-      ],
-    );
-
-    if (result!.xFiles.single.path != null) {
-      final File imageFile = File(result.xFiles.single.path);
-      final fileLength = await imageFile.length();
-      if (fileLength <= 5 * 1024 * 1024) {
-        setState(() {
-          _image = File(result.xFiles.single.path);
-          presetAdd.clear();
-          presetAdd.add(File(result.xFiles.single.path));
-        });
-      } else {
-        Fluttertoast.showToast(msg: "File size must be less tha 5Mb");
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     log(presetAdd.length.toString());
@@ -86,19 +86,51 @@ class _SinglePresetUploadingPageState extends State<SinglePresetUploadingPage> {
 
     Size size = MediaQuery.of(context).size;
     return Scaffold(
+       appBar: AppBar(
+          title: HelperText1(
+            text: " Upload Preset pack ".capitalizeFirstLetterOfEachWord(),
+            color: Colors.black87,
+            fontSize: 22,
+            
+          ),
+          surfaceTintColor: Colors.white,
+          elevation: 5,
+          shadowColor: Colors.black12,
+          backgroundColor: Colors.white,
+         
+        ),
       backgroundColor: getColor("#f2f2f2"),
       body: SingleChildScrollView(
         controller: scrollController,
         child: Column(
           children: [
             SizedBox(
-              height: size.height * 0.06,
+              height: size.height * 0.02,
             ),
+            PresetPrivacy(),
+            SizedBox(
+              height: size.height * 0.02,
+            ),
+
             Center(
               child: InkWell(
-                onTap: getImage,
+                onTap: () {
+                  if (presetAdd.isEmpty) {
+                    getPresetImages();
+                  } else if (presetAdd.isNotEmpty &&
+                      presetAdd.length < 10) {
+                    getPresetImages().then((_) {
+                      setState(
+                        () {},
+                      );
+                    });
+                  } else {
+                    Fluttertoast.showToast(
+                        msg: "Please clear the selected items first");
+                  }
+                },
                 child: Container(
-                  height: size.height * 0.35,
+                  height: size.height * 0.10,
                   width: size.width * 0.85,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(15),
@@ -107,41 +139,118 @@ class _SinglePresetUploadingPageState extends State<SinglePresetUploadingPage> {
                       color: Colors.black54,
                     ),
                   ),
-                  child: _image == null
-                      ? const Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.add_photo_alternate,
-                                color: Colors.black54,
+                  child: const Center(
+                    child: FittedBox(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 10.0),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            HelperText3(
+                              text: "Add preset images",
+                              color: Colors.black54,
+                            ),
+                            Text(
+                              'Choose up to 10 images',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontWeight: FontWeight.w200,
+                                color: Colors.black45,
                               ),
-                              HelperText1(
-                                text: "Add Your Preset file here",
-                                color: Colors.black54,
-                              )
-                            ],
-                          ),
-                        )
-                      : Padding(
-                          padding: const EdgeInsets.all(3),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(10),
-                            child: Image.file(_image!, fit: BoxFit.cover),
-                          ),
+                            ),
+                          ],
                         ),
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),
             SizedBox(
               height: size.height * 0.02,
             ),
-            if (_image != null)
-              GetPresetUploadingButton(
-                  onPressed: () {
-                    getImage();
-                  },
-                  text: 'Change selection'),
+            Center(
+              child: InkWell(
+                onTap: getPresetImages,
+                child: presetAdd.isEmpty && presetAdd == null
+                    ? const Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.add_photo_alternate,
+                              color: Colors.black54,
+                            ),
+                            HelperText1(
+                              text: "Add Your Preset file here",
+                              color: Colors.black54,
+                            )
+                          ],
+                        ),
+                      )
+                    : SizedBox(
+                        height: size.height * 0.45,
+                        width: size.width * 0.85,
+                        child: GridView.builder(
+                          controller: scrollController,
+                          scrollDirection: Axis.horizontal,
+                          itemCount: 10,
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            crossAxisSpacing: 5,
+                            mainAxisSpacing: 5,
+                          ),
+                          itemBuilder: (context, index) {
+                            // Check if index is within the range of selectedImages
+                            if (index < presetAdd.length) {
+                              return InkWell(
+                                onLongPress: () {
+                                  setState(() {
+                                    presetAdd.removeAt(index);
+                                  });
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.all(3),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(10),
+                                    child: Image.file(
+                                      presetAdd[index],
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            } else {
+                              // Render empty container
+                              return InkWell(
+                                onTap: () {
+                                  if (presetAdd.length < 4) {
+                                    getPresetImages().then((_) {
+                                      setState(
+                                          () {}); // Refresh the UI after selecting new images
+                                    });
+                                  }
+                                },
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    border: Border.all(
+                                        color: Colors.black54, width: 2),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: const Center(
+                                    child: Icon(Icons.add_photo_alternate,
+                                        color: Colors.black54),
+                                  ),
+                                ),
+                              );
+                            }
+                          },
+                        ),
+                      ),
+              ),
+            ),
             SizedBox(
               height: size.height * 0.02,
             ),
@@ -149,10 +258,10 @@ class _SinglePresetUploadingPageState extends State<SinglePresetUploadingPage> {
               child: InkWell(
                 onTap: () {
                   if (selectedImages.isEmpty) {
-                    getListOfImages();
+                    getCoverImages();
                   } else if (selectedImages.isNotEmpty &&
-                      selectedImages.length < 4) {
-                    getListOfImages().then((_) {
+                      selectedImages.length < 12) {
+                    getCoverImages().then((_) {
                       setState(
                         () {},
                       );
@@ -185,7 +294,7 @@ class _SinglePresetUploadingPageState extends State<SinglePresetUploadingPage> {
                               color: Colors.black54,
                             ),
                             Text(
-                              'Choose up to 4 images',
+                              'Choose up to 12 images',
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontWeight: FontWeight.w200,
@@ -206,7 +315,8 @@ class _SinglePresetUploadingPageState extends State<SinglePresetUploadingPage> {
                 width: size.width * 0.85,
                 child: GridView.builder(
                   controller: scrollController,
-                  itemCount: 4, // Always display 4 items
+                  scrollDirection: Axis.horizontal,
+                  itemCount: 12, // Always display 4 items
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
                     crossAxisSpacing: 5,
@@ -215,34 +325,21 @@ class _SinglePresetUploadingPageState extends State<SinglePresetUploadingPage> {
                   itemBuilder: (context, index) {
                     // Check if index is within the range of selectedImages
                     if (index < selectedImages.length) {
-                      return Padding(
-                        padding: const EdgeInsets.all(3),
-                        child: Stack(
-                          fit: StackFit.passthrough,
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(10),
-                              child: Image.file(
-                                selectedImages[index],
-                                fit: BoxFit.cover,
-                              ),
+                      return InkWell(
+                        onLongPress: () {
+                          setState(() {
+                            selectedImages.removeAt(index);
+                          });
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.all(3),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: Image.file(
+                              selectedImages[index],
+                              fit: BoxFit.cover,
                             ),
-                            Positioned(
-                              top: 0,
-                              right: 0,
-                              child: IconButton(
-                                onPressed: () {
-                                  setState(() {
-                                    selectedImages.removeAt(index);
-                                  });
-                                },
-                                icon: Icon(
-                                  Icons.remove_circle,
-                                  color: Colors.red[200],
-                                ),
-                              ),
-                            )
-                          ],
+                          ),
                         ),
                       );
                     } else {
@@ -250,7 +347,7 @@ class _SinglePresetUploadingPageState extends State<SinglePresetUploadingPage> {
                       return InkWell(
                         onTap: () {
                           if (selectedImages.length < 4) {
-                            getListOfImages().then((_) {
+                            getCoverImages().then((_) {
                               setState(
                                   () {}); // Refresh the UI after selecting new images
                             });
@@ -341,11 +438,11 @@ class _SinglePresetUploadingPageState extends State<SinglePresetUploadingPage> {
                   if (parsedPrice == null) {
                     Fluttertoast.showToast(msg: "Invalid Price");
                   } else {
-                    DataUploadAdmin.uploadPreset(
+                    DataUploadAdmin.uploadPresetList(
                       name: presetName,
                       price: parsedPrice,
                       description: presetDescription,
-                      presetData: presetAdd,
+                      presetFiles: presetAdd,
                       coverImages: selectedImages,
                     );
                     Future.delayed(const Duration(milliseconds: 800), () {

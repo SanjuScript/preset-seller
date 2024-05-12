@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:seller_app/CONSTANTS/assets.dart';
 import 'package:seller_app/CONSTANTS/fonts.dart';
 import 'package:seller_app/EXTENSION/capitalize.dart';
+import 'package:seller_app/EXTENSION/color_extension.dart';
 import 'package:seller_app/HELPERS/color_helper.dart';
 import 'package:seller_app/SCREENS/lightroom_presets/presets_list.dart';
 import 'package:seller_app/WIDGETS/Texts/helper_texts.dart';
@@ -34,9 +35,9 @@ class _HomeScreenState extends State<HomeScreen> {
             color: Colors.black87,
             fontSize: 25,
           ),
-          backgroundColor: getColor("#f2f2f2"),
+          backgroundColor: Colors.white,
         ),
-        backgroundColor: getColor("#f2f2f2"),
+        backgroundColor: "#f2f2f2".toColor(),
         body: ListView(
           controller: scrollController,
           children: [
@@ -55,10 +56,6 @@ class _HomeScreenState extends State<HomeScreen> {
                             context,
                             MaterialPageRoute(
                                 builder: (context) => const PresetListPage()));
-                            //      Navigator.push(
-                            // context,
-                            // MaterialPageRoute(
-                            //     builder: (context) => const MessageUi()));
                       },
                       child: Container(
                         height: size.height * .25,
@@ -82,7 +79,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   spreadRadius: 2,
                                   blurRadius: 30,
                                   offset: const Offset(2, -2)),
-                                    BoxShadow(
+                              BoxShadow(
                                   color: Colors.white12.withOpacity(.5),
                                   spreadRadius: 2,
                                   blurRadius: 30,

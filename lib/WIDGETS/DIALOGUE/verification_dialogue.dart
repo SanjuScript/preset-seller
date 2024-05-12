@@ -1,14 +1,20 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 class VerificationDialogue {
   static void showAccountCreatedDialog(BuildContext context) {
     showDialog(
+    
+      barrierDismissible: false,
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
+          
           title: const Text('Account Created'),
-          content: const Text('Your account has been created successfully. Please check your email for verification. After verifying your email, please login.'),
+          content: const Text(
+              'Your account has been created successfully. Please check your email for verification. After verifying your email, please login.'),
           actions: <Widget>[
             TextButton(
               onPressed: () {
@@ -20,5 +26,8 @@ class VerificationDialogue {
         );
       },
     );
+    Timer(const Duration(seconds: 2), () {
+      Navigator.pop(context);
+    });
   }
 }

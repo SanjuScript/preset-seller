@@ -247,10 +247,18 @@ class _LoginPageState extends State<LoginPage> {
                               const SizedBox(
                                 width: 15,
                               ),
-                              SvgPicture.asset(
-                                GetAssetFile.fbIcon,
-                                width: 35,
-                                height: 35,
+                              InkWell(
+                                onTap: () {
+                                  Fluttertoast.showToast(
+                                    msg:
+                                        'Facebook login is currently not available. Please use Google Sign-In or sign up using email.',
+                                  );
+                                },
+                                child: SvgPicture.asset(
+                                  GetAssetFile.fbIcon,
+                                  width: 35,
+                                  height: 35,
+                                ),
                               ),
                               const Spacer()
                             ],

@@ -1,6 +1,9 @@
 import 'dart:developer';
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -8,6 +11,40 @@ import 'package:seller_app/API/auth_api.dart';
 import 'package:seller_app/AUTHENTICATION/authentication_page.dart';
 
 class UpdateAdminData {
+  static bool isUploading = false;
+  static Future<void> updateProfilePicture(String imageUrl) async {
+    
+    try {
+      isUploading = true;
+
+      // Download image from URL
+      HttpClient httpClient = HttpClient();
+      var request = await httpClient.getUrl(Uri.parse(imageUrl));
+      var response = await request.close();
+      Uint8List bytes = await consolidateHttpClientResponseBytes(response);
+
+      // Upload new picture
+      var snapshot = await AuthApi.storage
+          .ref()
+          .child('profile_pictures/${AuthApi.auth.currentUser!.uid}.jpg')
+          .putData(bytes);
+      var downloadUrl = await snapshot.ref.getDownloadURL();
+
+     
+      await AuthApi.admins
+          .doc(AuthApi.auth.currentUser!.uid)
+          .set({'profile_picture': downloadUrl});
+    } catch (e) {
+      log('Error uploading profile picture: $e');
+      Fluttertoast.showToast(
+        msg: 'Failed to upload profile picture. Please try again.',
+        backgroundColor: Colors.red,
+      );
+    } finally {
+      isUploading = false;
+    }
+  }
+
   static Future<void> resetpPassword(String email) async {
     try {
       await AuthApi.auth.sendPasswordResetEmail(email: email);
@@ -43,8 +80,8 @@ class UpdateAdminData {
   static Future<void> signOut(BuildContext context) async {
     try {
       await FirebaseAuth.instance.signOut();
-       final GoogleSignIn googleSignIn = GoogleSignIn();
-    await googleSignIn.signOut();
+      final GoogleSignIn googleSignIn = GoogleSignIn();
+      await googleSignIn.signOut();
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const AuthenticationPage()),
@@ -139,8 +176,6 @@ class UpdateAdminData {
     }
   }
 
-  
-
   static Future<void> updateFirstName(String firstName) async {
     try {
       final currentUser = AuthApi.auth.currentUser;
@@ -210,31 +245,30 @@ class UpdateAdminData {
     }
   }
 
- static Future<void> deleteProfilePicture() async {
-  try {
-    // Get reference to the profile picture
-    var reference = AuthApi.storage
-        .ref()
-        .child('profile_pictures/${AuthApi.auth.currentUser!.uid}.jpg');
+  static Future<void> deleteProfilePicture() async {
+    try {
+      // Get reference to the profile picture
+      var reference = AuthApi.storage
+          .ref()
+          .child('profile_pictures/${AuthApi.auth.currentUser!.uid}.jpg');
 
-    // Delete the profile picture
-    await reference.delete();
+      // Delete the profile picture
+      await reference.delete();
 
-    // Update profile picture URL in the database to null or any default value
-    await AuthApi.admins
-        .doc(AuthApi.auth.currentUser!.uid)
-        .update({'profile_picture': null});
+      // Update profile picture URL in the database to null or any default value
+      await AuthApi.admins
+          .doc(AuthApi.auth.currentUser!.uid)
+          .update({'profile_picture': null});
 
-    Fluttertoast.showToast(msg: 'Profile picture deleted successfully');
-  } catch (e) {
-    if (e is FirebaseException && e.code == 'object-not-found') {
-      Fluttertoast.showToast(msg: 'Profile picture does not exist');
-    } else {
-      print('Error deleting profile picture: $e');
-      Fluttertoast.showToast(
-          msg: 'Failed to delete profile picture. Please try again.');
+      Fluttertoast.showToast(msg: 'Profile picture deleted successfully');
+    } catch (e) {
+      if (e is FirebaseException && e.code == 'object-not-found') {
+        Fluttertoast.showToast(msg: 'Profile picture does not exist');
+      } else {
+        print('Error deleting profile picture: $e');
+        Fluttertoast.showToast(
+            msg: 'Failed to delete profile picture. Please try again.');
+      }
     }
   }
-}
-
 }

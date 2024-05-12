@@ -152,10 +152,12 @@ class _ProfileEditingPageState extends State<ProfileEditingPage> {
                           color: Colors.grey[300],
                         ),
                         child: Stack(
+                          fit: StackFit.passthrough,
                           children: [
                             ClipRRect(
                               borderRadius: BorderRadius.circular(100),
                               child: CachedNetworkImage(
+                                
                                 imageUrl: widget.adminData.userProfileUrl !=
                                             null &&
                                         widget.adminData.userProfileUrl!
