@@ -6,7 +6,7 @@ import 'package:seller_app/API/notification_handling_api.dart';
 import 'package:seller_app/PROVIDERS/bottom_nav_provider.dart';
 import 'package:seller_app/SCREENS/home_page.dart';
 import 'package:seller_app/SCREENS/order_details/orders.dart';
-import 'package:seller_app/SCREENS/profile_page.dart';
+import 'package:seller_app/SCREENS/PROFILE_DETAILS/profile_page.dart';
 
 class BottomNav extends StatefulWidget {
   const BottomNav({super.key});
@@ -90,19 +90,13 @@ class _BottomNavState extends State<BottomNav> {
           child: SizedBox(
             height: MediaQuery.of(context).size.height * 0.085,
             child: BottomNavigationBar(
-              showUnselectedLabels: false,
-              unselectedItemColor: Color.fromARGB(255, 148, 148, 148),
-              selectedFontSize: MediaQuery.of(context).size.height * 0.01,
-              selectedItemColor: Colors.black87,
-              selectedLabelStyle: const TextStyle(
-                fontWeight: FontWeight.bold,
-                letterSpacing: 0.5,
-              ),
+              selectedFontSize: MediaQuery.of(context).size.height * 0.013,
               currentIndex: provider.selectedIndex,
               onTap: (int index) {
                 provider.selectedIndex = index;
                 if (index != 0) {
-                  // NotificationApi.showPresetUploadedNotification();
+
+                  
                 }
 
                 navigateToPage(index);

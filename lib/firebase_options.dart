@@ -27,10 +27,7 @@ class DefaultFirebaseOptions {
       case TargetPlatform.macOS:
         return macos;
       case TargetPlatform.windows:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for windows - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return windows;
       case TargetPlatform.linux:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for linux - '
@@ -67,17 +64,30 @@ class DefaultFirebaseOptions {
     messagingSenderId: '465956513894',
     projectId: 'selling-app-b0ecc',
     storageBucket: 'selling-app-b0ecc.appspot.com',
+    androidClientId: '465956513894-cb7545dhse5ggte1ar0audhddq0ccm9m.apps.googleusercontent.com',
     iosClientId: '465956513894-5mnshvpb7t2fdmqlmntdfs9nf5i7lloj.apps.googleusercontent.com',
     iosBundleId: 'com.example.sellerApp',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
     apiKey: 'AIzaSyCN3XwO5pLotzz-CsbzorDwqfjy9xuRMAY',
-    appId: '1:465956513894:ios:8ae295eaeb6f60d34e25a7',
+    appId: '1:465956513894:ios:3cb2b51201a7d6284e25a7',
     messagingSenderId: '465956513894',
     projectId: 'selling-app-b0ecc',
     storageBucket: 'selling-app-b0ecc.appspot.com',
-    iosClientId: '465956513894-jdi6posk98arpnoi9fhro0qclat4igjp.apps.googleusercontent.com',
-    iosBundleId: 'com.example.sellerApp.RunnerTests',
+    androidClientId: '465956513894-cb7545dhse5ggte1ar0audhddq0ccm9m.apps.googleusercontent.com',
+    iosClientId: '465956513894-5mnshvpb7t2fdmqlmntdfs9nf5i7lloj.apps.googleusercontent.com',
+    iosBundleId: 'com.example.sellerApp',
   );
+
+  static const FirebaseOptions windows = FirebaseOptions(
+    apiKey: 'AIzaSyChqcT75QQ6QS2QoxUJGagjBbbcTVhikAg',
+    appId: '1:465956513894:web:c01cf9160701daa34e25a7',
+    messagingSenderId: '465956513894',
+    projectId: 'selling-app-b0ecc',
+    authDomain: 'selling-app-b0ecc.firebaseapp.com',
+    storageBucket: 'selling-app-b0ecc.appspot.com',
+    measurementId: 'G-ZE74SYFL1P',
+  );
+
 }

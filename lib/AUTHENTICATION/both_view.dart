@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:seller_app/PROVIDERS/auth_page_controller_provider.dart';
 
-
 class BothScreensView extends StatefulWidget {
   const BothScreensView({super.key});
 
@@ -14,14 +13,14 @@ class _BothScreensViewState extends State<BothScreensView> {
   @override
   Widget build(BuildContext context) {
     final pageProvider = Provider.of<AuthPageControllerProvider>(context);
-    return WillPopScope(
-      onWillPop: () async{
+    return PopScope(
+      canPop: pageProvider.currentIndex == 0,
+     
+      onPopInvokedWithResult: (didPop, result) {
         if (pageProvider.currentIndex != 0) {
           pageProvider.navigateToPage(0);
-          return false;
-        } else {
-          return true;
         }
+  
       },
       child: Scaffold(
         backgroundColor: Colors.transparent,

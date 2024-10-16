@@ -10,18 +10,20 @@ import 'package:seller_app/API/auth_api.dart';
 import 'package:path/path.dart' as p;
 import 'package:seller_app/API/notification_handling_api.dart';
 import 'package:seller_app/CONTROLLER/network_controller.dart';
+import 'package:seller_app/HELPERS/unique_id_generator.dart';
 
-class DataUploadAdmin {
+class PresetUploader {
   static bool isUploading = false;
 
   // static StatusState status = StatusState.pending;
-  static Future<void> uploadPreset({
-    required String name,
-    required int price,
-    required String description,
-    required List<File> presetData,
-    required List<File> coverImages,
-  }) async {
+  static Future<void> uploadPreset(
+      {required String name,
+      required int price,
+      required String description,
+      required List<File> presetData,
+      required List<File> coverImages,
+      required bool isPaid,
+      required int priceMRP}) async {
     if (isUploading) {
       Fluttertoast.showToast(
         msg: 'A file is already being uploaded. Please wait.',
@@ -36,7 +38,7 @@ class DataUploadAdmin {
       int totalFiles = presetData.length + coverImages.length;
       int uploadedFiles = 0;
 
-      if (!await NetworkInterceptor().isNetworkAvailable()) {
+      if (!await NetworkInterceptor.isNetworkAvailable()) {
         Fluttertoast.showToast(
           msg:
               'No internet connection. Please connect to the internet and try again.',
@@ -81,6 +83,7 @@ class DataUploadAdmin {
 
       // log(presetDownloadUrl);
       String ownerData = AuthApi.auth.currentUser!.uid;
+      String id = GetUniqueID.getCustomUniqueId();
 
       List<String> coverImagesUrls = [];
       for (int i = 0; i < coverImages.length; i++) {
@@ -116,15 +119,20 @@ class DataUploadAdmin {
           'coverImages': coverImagesUrls,
           'name': name,
           'price': price,
+          'mrp': priceMRP,
           'presetsBoughtCount': 0,
           'likeCount': 0,
           "owner_data": ownerData,
+          "showMRP": false,
+          "hideOffer": false,
           "shares": 0,
           "description": description,
           "status": "pending",
           "docId": '',
+          "id": id,
+          "isPaid": isPaid,
         },
-      ); // Add the download URL to a document in the subcollection
+      );
 
       String docId = docRef.id;
       await docRef.update({"docId": docId});
@@ -154,8 +162,10 @@ class DataUploadAdmin {
   static Future<void> uploadPresetList({
     required String name,
     required int price,
+    required int priceMRP,
     required String description,
     required List<File> presetFiles,
+    required bool isPaid,
     required List<File> coverImages,
   }) async {
     if (isUploading) {
@@ -196,6 +206,7 @@ class DataUploadAdmin {
       }
 
       String ownerData = AuthApi.auth.currentUser!.uid;
+      String id = GetUniqueID.getCustomUniqueId();
 
       // Update the Firestore document in the "admins" collection
       DocumentReference docRef = await AuthApi.admins
@@ -208,14 +219,19 @@ class DataUploadAdmin {
           'coverImages': coverImagesUrls,
           'isList': true,
           'name': name,
+          'mrp': priceMRP,
+          "showMRP": false,
+          "hideOffer": false,
           'price': price,
           'presetsBoughtCount': 0,
           'likeCount': 0,
+          "isPaid": isPaid,
           "shares": 0,
           "owner_data": ownerData,
           "description": description,
           "status": "pending",
           "docId": '',
+          "id": id,
         },
       ); // Add the download URLs as an array to a document in the subcollection
       String docId = docRef.id;

@@ -4,17 +4,16 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:seller_app/CONSTANTS/assets.dart';
 import 'package:seller_app/DATA/admin_data.dart';
-import 'package:seller_app/FUNCTIONS/admin_data_controller_unit.dart';
-import 'package:seller_app/MODEL/preset_data_model.dart';
+import 'package:seller_app/ROUTER/notification_router.dart';
 
-final navigatorKey = GlobalKey<NavigatorState>();
+// final navigatorKey = GlobalKey<NavigatorState>();
 
 class NotificationApi {
   static final _firebaseMessaging = FirebaseMessaging.instance;
   static final FlutterLocalNotificationsPlugin
       _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+  static const String paymentChannelId = 'payment channel';
 
   static Future<void> init() async {
     await _firebaseMessaging.requestPermission(
@@ -28,17 +27,26 @@ class NotificationApi {
     );
   }
 
+  static Future<bool> checkNotificationPermission() async {
+    bool notificationEnabled = false;
+    if (!kIsWeb) {
+      final NotificationSettings settings =
+          await _firebaseMessaging.requestPermission();
+      notificationEnabled =
+          settings.authorizationStatus == AuthorizationStatus.authorized;
+    }
+    return notificationEnabled;
+  }
+
   static Future<String?> getDeviceToken({int maxRetires = 3}) async {
     try {
       String? token;
       if (kIsWeb) {
-        // get the device fcm token
         token = await _firebaseMessaging.getToken(
             vapidKey:
                 "BPA9r_00LYvGIV9GPqkpCwfIl3Es4IfbGqE9CSrm6oeYJslJNmicXYHyWOZQMPlORgfhG8RNGe7hIxmbLXuJ92k");
         log("for web device token: $token");
       } else {
-        // get the device fcm token
         token = await _firebaseMessaging.getToken();
         log("for android device token: $token");
       }
@@ -58,7 +66,14 @@ class NotificationApi {
   }
 
   static Future<void> localNotiInit() async {
-    // initialise the plugin. app_icon needs to be a added as a drawable resource to the Android head project
+    const AndroidNotificationChannel paymentChannel =
+        AndroidNotificationChannel(paymentChannelId, 'Payment Updates',
+            description: "Notifications for payments");
+    await _flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>()!
+        .createNotificationChannel(paymentChannel);
+
     const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings(
       '@mipmap/ic_launcher',
@@ -69,12 +84,13 @@ class NotificationApi {
     );
     const LinuxInitializationSettings initializationSettingsLinux =
         LinuxInitializationSettings(defaultActionName: 'Open notification');
+
     InitializationSettings initializationSettings = InitializationSettings(
         android: initializationSettingsAndroid,
         iOS: initializationSettingsDarwin,
         linux: initializationSettingsLinux);
 
-    // request notification permissions for android 13 or above
+    // Android 13
     _flutterLocalNotificationsPlugin
         .resolvePlatformSpecificImplementation<
             AndroidFlutterLocalNotificationsPlugin>()!
@@ -87,19 +103,8 @@ class NotificationApi {
 
   static void onNotificationTap(
       NotificationResponse notificationResponse) async {
-    if (notificationResponse.payload == "preset_uploaded" ||
-        notificationResponse.payload == "preset_upload_failure") {
-      navigatorKey.currentState!.pushNamed("/presetList");
-    } else if (notificationResponse.payload!.startsWith("preset_cover")) {
-      String docId = notificationResponse.payload!.split("_").last;
-      log(docId);
-      PresetModel? presetModel =
-          await DataController.getPresetModelForDocId(docId);
-      navigatorKey.currentState!
-          .pushNamed("/presetView", arguments: {"presetModel": presetModel});
-    } else {
-      navigatorKey.currentState!.pushNamed("/home");
-    }
+    log("Notification Response : ${notificationResponse.payload}");
+    NotificationRouter.routeNotification(notificationResponse);
   }
 
   static Future<void> showSimpleNotification({
@@ -108,12 +113,14 @@ class NotificationApi {
     required String payload,
   }) async {
     const AndroidNotificationDetails androidNotificationDetails =
-        AndroidNotificationDetails('com.ryanhansie.id', 'Admin notifier',
-            channelDescription: 'To notify the admins about their datas',
-            importance: Importance.max,
-            priority: Priority.high,
-            // styleInformation: bigPictureStyleInformation,
-            ticker: 'ticker');
+        AndroidNotificationDetails(
+      'com.ryanhansie.id', 'App updates',
+      channelDescription: 'To notify the users about their data',
+      importance: Importance.max,
+      priority: Priority.high,
+      // styleInformation: bigPictureStyleInformation,
+      ticker: 'ticker',
+    );
 
     //             const String filePath = GetAssetFile.rejectedIcon;
     //  BigPictureStyleInformation bigPictureStyleInformation =
@@ -128,61 +135,100 @@ class NotificationApi {
     log(payload);
   }
 
- static void showProgressNotification({
-  required String title,
-  required String body,
-  required int id,
-}) {
-  AndroidNotificationDetails androidNotificationDetails =
-      const AndroidNotificationDetails(
-    'com.ryanhansie.id',
-    'progress',
-    channelDescription: 'To notify the admins about their datas',
-    importance: Importance.max,
-    priority: Priority.high,
-    // Do not set progress, maxProgress, and indeterminate here
-  );
+  static Future<void> showPaymentNotification({
+    required String title,
+    required String body,
+    required String payload,
+  }) async {
+    const AndroidNotificationDetails androidNotificationDetails =
+        AndroidNotificationDetails(
+      paymentChannelId,
+      "Payment Updates",
+      channelDescription: 'Notifications for payments',
+      importance: Importance.max,
+      priority: Priority.high,
+      ticker: 'ticker',
+    );
+    const NotificationDetails notificationDetails =
+        NotificationDetails(android: androidNotificationDetails);
+    await _flutterLocalNotificationsPlugin
+        .show(0, title, body, notificationDetails, payload: payload);
 
-  NotificationDetails notificationDetails =
-      NotificationDetails(android: androidNotificationDetails);
-  _flutterLocalNotificationsPlugin.show(
-    id,
-    title,
-    body,
-    notificationDetails,
-    payload: 'upload_progress',
-  );
+    log(payload);
+  }
+
+  static void showProgressNotification({
+    required String title,
+    required String body,
+    required int id,
+  }) {
+    AndroidNotificationDetails androidNotificationDetails =
+        const AndroidNotificationDetails(
+      'com.ryanhansie.id',
+      'progress',
+      channelDescription: 'To notify the admins about their datas',
+      importance: Importance.max,
+      priority: Priority.high,
+      // Do not set progress, maxProgress, and indeterminate here
+    );
+
+    NotificationDetails notificationDetails =
+        NotificationDetails(android: androidNotificationDetails);
+    _flutterLocalNotificationsPlugin.show(
+      id,
+      title,
+      body,
+      notificationDetails,
+      payload: 'upload_progress',
+    );
+  }
+
+  static void updateProgressNotification({
+    required int id,
+    required double progress,
+  }) {
+    AndroidNotificationDetails androidNotificationDetails =
+        AndroidNotificationDetails(
+      'com.ryanhansie.id',
+      'progress',
+      channelDescription: 'To notify the admins about their datas',
+      importance: Importance.max,
+      priority: Priority.high,
+      progress: progress.toInt(),
+      maxProgress: 100,
+      indeterminate: false,
+    );
+
+    NotificationDetails notificationDetails =
+        NotificationDetails(android: androidNotificationDetails);
+    _flutterLocalNotificationsPlugin.show(
+      id,
+      'Uploading Presets',
+      'Uploading in progress...',
+      notificationDetails,
+      payload: 'upload_progress',
+    );
+  }
+
+  static void removeNotification({required int id}) {
+    _flutterLocalNotificationsPlugin.cancel(id);
+  }
 }
-
-static void updateProgressNotification({
-  required int id,
-  required double progress,
-}) {
-  AndroidNotificationDetails androidNotificationDetails =
-      AndroidNotificationDetails(
-    'com.ryanhansie.id',
-    'progress',
-    channelDescription: 'To notify the admins about their datas',
-    importance: Importance.max,
-    priority: Priority.high,
-    progress: progress.toInt(),
-    maxProgress: 100,
-    indeterminate: false,
-  );
-
-  NotificationDetails notificationDetails =
-      NotificationDetails(android: androidNotificationDetails);
-  _flutterLocalNotificationsPlugin.show(
-    id,
-    'Uploading Presets',
-    'Uploading in progress...',
-    notificationDetails,
-    payload: 'upload_progress',
-  );
-}
-
-static void removeNotification({required int id}) {
-  _flutterLocalNotificationsPlugin.cancel(id);
-}
-
-}
+// static void onNotificationTap(
+//       NotificationResponse notificationResponse) async {
+//     if (notificationResponse.payload == "preset_uploaded" ||
+//         notificationResponse.payload == "preset_upload_failure") {
+//       navigatorKey.currentState!.pushNamed("/presetList");
+//     } else if (notificationResponse.payload!.startsWith("preset_cover")) {
+//       String docId = notificationResponse.payload!.split("_").last;
+//       log(docId);
+//       PresetModel? presetModel =
+//           await DataController.getPresetModelForDocId(docId);
+//       navigatorKey.currentState!
+//           .pushNamed("/presetView", arguments: {"presetModel": presetModel});
+//     } else if (notificationResponse.payload == "withdrawel_pending") {
+//       navigatorKey.currentState!.pushNamed("/wallet");
+//     } else {
+//       navigatorKey.currentState!.pushNamed("/home");
+//     }
+//   }

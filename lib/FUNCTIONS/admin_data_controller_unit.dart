@@ -104,17 +104,6 @@ class DataController {
     }
   }
 
-  static Future<void> updatePaymentStatus(bool isPaymentSet) async {
-    try {
-      await FirebaseFirestore.instance.collection('admins').doc(AuthApi.auth.currentUser!.uid).update({
-        'isPaymentSet': isPaymentSet,
-      });
-    } catch (e) {
-      log('Error updating payment status: $e');
-      
-    }
-  }
-
   static Future<void> deleteCoverImageByUrl({
     required String docId,
     required String coverImageUrl,
@@ -175,7 +164,7 @@ class DataController {
         return null;
       }
     } catch (e) {
-      print('Error fetching PresetModel for docId: $e');
+      log('Error fetching PresetModel for docId: $e');
       return null;
     }
   }

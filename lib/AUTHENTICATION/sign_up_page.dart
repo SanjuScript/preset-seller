@@ -7,6 +7,7 @@ import 'package:flutter/widgets.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 import 'package:seller_app/CONSTANTS/fonts.dart';
+import 'package:seller_app/CONTROLLER/network_controller.dart';
 import 'package:seller_app/FUNCTIONS/login_auth_functions.dart';
 import 'package:seller_app/PROVIDERS/auth_page_controller_provider.dart';
 import 'package:seller_app/PROVIDERS/policy_status_checking_provider.dart';
@@ -47,6 +48,7 @@ class _SignUpPageState extends State<SignUpPage> {
   Widget build(BuildContext context) {
     Size size = MediaQuery.sizeOf(context);
     final status = Provider.of<PolicyStatusProvider>(context, listen: false);
+    final authProvider = Provider.of<LoginAuthProvider>(context);
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: SingleChildScrollView(
@@ -66,7 +68,7 @@ class _SignUpPageState extends State<SignUpPage> {
                     fontSize: size.width * 0.12,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
-                    fontFamily: 'rounder',
+                    fontFamily: 'monuse',
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -235,17 +237,36 @@ class _SignUpPageState extends State<SignUpPage> {
                         AuthenticationButton(
                           onTap: () async {
                             final fieldData = await getFieldData();
-                            if (fieldData != null && fieldData) {
-                              if (status.accepted) {
-                                LoginAuth.doSignUP(
-                                    context: context,
-                                    email: emailController.text,
-                                    pass: passwordController.text,
-                                    firstName: firstNameController.text,
-                                    lastName: lastNameController.text);
-                              } else {
-                                Fluttertoast.showToast(
-                                    msg: "Accept privacy policy before you go");
+                            // ignore: unnecessary_null_comparison
+                            if (await NetworkInterceptor.isNetworkAvailable() !=
+                                null) {
+                              if (fieldData != null && fieldData) {
+                                if (status.accepted) {
+                                  showAuthLoading(context);
+
+                                  await authProvider.doSignUp(
+                                    context,
+                                    emailController.text.trim(),
+                                    firstNameController.text.trim(),
+                                    lastNameController.text.trim(),
+                                    passwordController.text.trim(),
+                                  );
+
+                                  if (mounted) {
+                                    Navigator.pop(context);
+
+                                    Future.delayed(Durations.long2, () {
+                                      Provider.of<AuthPageControllerProvider>(
+                                              context,
+                                              listen: false)
+                                          .navigateToPage(0);
+                                    });
+                                  }
+                                } else {
+                                  Fluttertoast.showToast(
+                                      msg:
+                                          "Accept privacy policy before you go");
+                                }
                               }
                             }
                           },
@@ -295,6 +316,24 @@ class _SignUpPageState extends State<SignUpPage> {
               )
             ]),
       ),
+    );
+  }
+
+  void showAuthLoading(BuildContext context) {
+    showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (BuildContext context) {
+        return const AlertDialog(
+          content: Row(
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(width: 20),
+              Text("Creating account..."),
+            ],
+          ),
+        );
+      },
     );
   }
 }

@@ -16,7 +16,7 @@ class AuthenticationButton extends StatelessWidget {
     final size = MediaQuery.sizeOf(context);
     return InkWell(
       onTap: onTap,
-      overlayColor: MaterialStateProperty.all(Colors.transparent),
+      overlayColor: WidgetStateProperty.all(Colors.transparent),
       child: Container(
         height: size.height * .072,
         width: size.width,
@@ -27,6 +27,7 @@ class AuthenticationButton extends StatelessWidget {
         ),
         child: Center(
           child: HelperText1(
+            
             text: text,
             color: Colors.black87,
           ),

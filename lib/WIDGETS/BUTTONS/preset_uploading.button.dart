@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:seller_app/CONSTANTS/fonts.dart';
 import 'package:seller_app/EXTENSION/capitalize.dart';
+import 'package:seller_app/EXTENSION/color_extension.dart';
 
 class GetPresetUploadingButton extends StatelessWidget {
   final void Function() onPressed;
@@ -10,7 +11,7 @@ class GetPresetUploadingButton extends StatelessWidget {
   const GetPresetUploadingButton(
       {super.key,
       required this.onPressed,
-      this.textColor =  Colors.white70,
+      this.textColor = Colors.white70,
       this.color = Colors.black87,
       required this.text});
 
@@ -27,15 +28,24 @@ class GetPresetUploadingButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(15),
         ),
         child: Center(
-          child: Text(
-            text.capitalizeFirstLetterOfEachWord(),
-            style: TextStyle(
-              fontSize: size.width * 0.06,
-              overflow: TextOverflow.ellipsis,
-              color:textColor,
-              fontFamily: Getfont.rounder,
-            ),
-            textAlign: TextAlign.center,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.upload_rounded,
+                size: size.width * .062,
+                color: "#eff3fc".toColor(),
+              ),
+              SizedBox(
+                width: 15,
+              ),
+              Text(
+                text.capitalizeFirstLetterOfEachWord(),
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                    color: "#eff3fc".toColor(), fontSize: size.width * .060),
+              ),
+            ],
           ),
         ),
       ),

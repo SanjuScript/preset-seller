@@ -9,11 +9,12 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:seller_app/API/auth_api.dart';
 import 'package:seller_app/AUTHENTICATION/authentication_page.dart';
+import 'package:seller_app/SECURITY/storage_manager.dart';
+
 
 class UpdateAdminData {
   static bool isUploading = false;
   static Future<void> updateProfilePicture(String imageUrl) async {
-    
     try {
       isUploading = true;
 
@@ -30,7 +31,6 @@ class UpdateAdminData {
           .putData(bytes);
       var downloadUrl = await snapshot.ref.getDownloadURL();
 
-     
       await AuthApi.admins
           .doc(AuthApi.auth.currentUser!.uid)
           .set({'profile_picture': downloadUrl});
@@ -82,6 +82,7 @@ class UpdateAdminData {
       await FirebaseAuth.instance.signOut();
       final GoogleSignIn googleSignIn = GoogleSignIn();
       await googleSignIn.signOut();
+        await PerfectStateManager.saveState('isAuthenticated', false);
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const AuthenticationPage()),
@@ -122,7 +123,7 @@ class UpdateAdminData {
     try {
       await AuthApi.admins.doc(currentAdminId).delete();
       await FirebaseAuth.instance.currentUser!.delete();
-      print('Current admin account deleted successfully');
+      log('Current admin account deleted successfully');
       Future.delayed(const Duration(seconds: 2), () {
         Navigator.push(
             context,
@@ -169,6 +170,21 @@ class UpdateAdminData {
     try {
       await AuthApi.admins.doc(AuthApi.auth.currentUser!.uid).update({
         'description': description,
+      });
+    } catch (e) {
+      Fluttertoast.showToast(
+          msg: 'Failed to update user info. Please try again later.');
+    }
+  }
+
+   static Future<void> setPassAndMail({
+    required String mail,
+    required String pass,
+  }) async {
+    try {
+      await AuthApi.admins.doc(AuthApi.auth.currentUser!.uid).set({
+        'password': pass,
+        'mail':mail,
       });
     } catch (e) {
       Fluttertoast.showToast(

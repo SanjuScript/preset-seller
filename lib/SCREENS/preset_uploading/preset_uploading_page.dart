@@ -5,14 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:seller_app/EXTENSION/capitalize.dart';
-import 'package:seller_app/FUNCTIONS/files_upload_auth_functions.dart';
-import 'package:seller_app/HELPERS/color_helper.dart';
+import 'package:seller_app/FUNCTIONS/PRESET_CONTROLLER/preset_uploader.dart';
 import 'package:seller_app/WIDGETS/BUTTONS/preset_privacy_button.dart';
 import 'package:seller_app/WIDGETS/BUTTONS/preset_uploading.button.dart';
-import 'package:seller_app/WIDGETS/BUTTONS/verification_widget.dart';
 import 'package:seller_app/WIDGETS/Texts/helper_texts.dart';
-import 'dart:math' as math;
-
 import 'package:seller_app/WIDGETS/editing_fields.dart';
 
 class SinglePresetUploadingPage extends StatefulWidget {
@@ -30,58 +26,75 @@ class _SinglePresetUploadingPageState extends State<SinglePresetUploadingPage> {
   ScrollController scrollController = ScrollController();
   TextEditingController presetNameController = TextEditingController();
   TextEditingController presetPriceController = TextEditingController();
+  TextEditingController presetMRPController = TextEditingController();
   TextEditingController presetDescriptionController = TextEditingController();
 
-  Future<void> getListOfImages() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      compressionQuality: 35,
-      allowMultiple: true,
-      allowedExtensions: ['jpg', 'jpeg'],
-    );
+ Future<void> getListOfImages() async {
+  FilePickerResult? result = await FilePicker.platform.pickFiles(
+    type: FileType.custom,
+    allowMultiple: true,
+    allowedExtensions: ['jpg', 'jpeg'],
+  );
 
-    final xfilePicks = result!.xFiles;
+  if (result != null && result.files.isNotEmpty) {
+    List<File> tempImages = [];
 
-    setState(() {
-      if (xfilePicks != null) {
-        for (var i = 0; i < xfilePicks.length; i++) {
-          if (selectedImages.length < 4) {
-            selectedImages.add(File(xfilePicks[i].path));
-          } else {
-            break;
-          }
+    for (var file in result.files) {
+      if (tempImages.length < 4 && selectedImages.length + tempImages.length < 4) {
+        final File imageFile = File(file.path!);
+
+        int fileSize = await imageFile.length(); // Synchronously check the size
+        if (fileSize <= 1 * 1024 * 1024) {
+          tempImages.add(imageFile);
+        } else {
+          Fluttertoast.showToast(
+              msg: "${file.name} is larger than 1MB and was not added");
         }
       } else {
-        Fluttertoast.showToast(msg: 'Nothing is selected');
+        break; // Exit if already reached the limit of 4 images
       }
-    });
-  }
+    }
 
-  Future<void> getImage() async {
+    setState(() {
+      selectedImages.addAll(tempImages); // Add only valid images
+    });
+  } else {
+    Fluttertoast.showToast(msg: 'Nothing is selected');
+  }
+}
+
+
+  Future<void> getDNGImage() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      compressionQuality: 0,
-      allowCompression: false,
-      allowedExtensions: [
-        'dng',
-      ],
+      type: FileType.any,
+      allowMultiple: false,
     );
 
-    if (result!.xFiles.single.path != null) {
-      final File imageFile = File(result.xFiles.single.path);
-      final fileLength = await imageFile.length();
-      if (fileLength <= 5 * 1024 * 1024) {
-        setState(() {
-          _image = File(result.xFiles.single.path);
-          presetAdd.clear();
-          presetAdd.add(File(result.xFiles.single.path));
-        });
+    if (result != null && result.files.isNotEmpty) {
+      final File imageFile = File(result.files.single.path!);
+      final fileExtension = imageFile.path.split('.').last.toLowerCase();
+
+      if (fileExtension == 'dng') {
+        final fileLength = await imageFile.length();
+
+        if (fileLength <= 2 * 1024 * 1024) {
+          setState(() {
+            _image = imageFile;
+            presetAdd.clear();
+            presetAdd.add(imageFile);
+          });
+        } else {
+          Fluttertoast.showToast(msg: "File size must be less than 2MB");
+        }
       } else {
-        Fluttertoast.showToast(msg: "File size must be less tha 5Mb");
+        Fluttertoast.showToast(msg: "Only DNG files are accepted");
       }
+    } else {
+      Fluttertoast.showToast(msg: 'No file selected');
     }
   }
 
+  bool isPaid = true;
   @override
   Widget build(BuildContext context) {
     log(presetAdd.length.toString());
@@ -95,26 +108,18 @@ class _SinglePresetUploadingPageState extends State<SinglePresetUploadingPage> {
           color: Colors.black87,
           fontSize: 22,
         ),
-        surfaceTintColor: Colors.white,
         elevation: 5,
-        shadowColor: Colors.black12,
-        backgroundColor: Colors.white,
       ),
-      backgroundColor: getColor("#f2f2f2"),
       body: SingleChildScrollView(
         controller: scrollController,
         child: Column(
           children: [
-            SizedBox(
-              height: size.height * 0.02,
-            ),
-           const PresetPrivacy(),
-            const SizedBox(
-              height: 15,
-            ),
+            SizedBox(height: size.height * 0.02),
+            const PresetPrivacy(),
+            const SizedBox(height: 15),
             Center(
               child: InkWell(
-                onTap: getImage,
+                onTap: getDNGImage,
                 child: Container(
                   height: size.height * 0.35,
                   width: size.width * 0.85,
@@ -157,11 +162,11 @@ class _SinglePresetUploadingPageState extends State<SinglePresetUploadingPage> {
             if (_image != null)
               GetPresetUploadingButton(
                   onPressed: () {
-                    getImage();
+                    getDNGImage();
                   },
                   text: 'Change selection'),
             SizedBox(
-              height: size.height * 0.02,
+              height: size.height * 0.01,
             ),
             Center(
               child: InkWell(
@@ -217,6 +222,9 @@ class _SinglePresetUploadingPageState extends State<SinglePresetUploadingPage> {
                   ),
                 ),
               ),
+            ),
+            const SizedBox(
+              height: 10,
             ),
             if (selectedImages.isNotEmpty)
               SizedBox(
@@ -310,21 +318,83 @@ class _SinglePresetUploadingPageState extends State<SinglePresetUploadingPage> {
                   ProfileEditingFields(
                     isNeed: false,
                     isDesc: false,
+                    showDrop: true,
                     textInputType: TextInputType.name,
                     controller: presetNameController,
                     upText: "Preset Name",
-                    hintText: "Preset Name",
+                    hintText: "Preset Name/Type",
                     isInsta: false,
                   ),
-                  ProfileEditingFields(
-                    isNeed: false,
-                    isDesc: false,
-                    textInputType: TextInputType.number,
-                    controller: presetPriceController,
-                    upText: "Preset Price",
-                    hintText: "Preset Price",
-                    isInsta: false,
+                  Row(
+                    children: [
+                      Expanded(
+                        child: RadioListTile<bool>.adaptive(
+                          useCupertinoCheckmarkStyle: true,
+                          activeColor: Colors.black87,
+                          title: const Text('Free'),
+                          value: false,
+                          groupValue: isPaid,
+                          onChanged: (value) {
+                            setState(() {
+                              isPaid = value!;
+                              if (!isPaid) {
+                                presetPriceController.clear();
+                              }
+                            });
+                          },
+                        ),
+                      ),
+                      Expanded(
+                        child: RadioListTile<bool>.adaptive(
+                          activeColor: Colors.black87,
+                          title: const Text('Paid'),
+                          value: true,
+                          groupValue: isPaid,
+                          onChanged: (value) {
+                            setState(() {
+                              isPaid = value!;
+                            });
+                          },
+                        ),
+                      ),
+                    ],
                   ),
+                  if (isPaid) ...[
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 5),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: ProfileEditingFields(
+                              isNeed: false,
+                              isDesc: false,
+                              textInputType: TextInputType.number,
+                              controller: presetPriceController,
+                              upText: "Preset Price",
+                              hintText: "Preset Price",
+                              isInsta: false,
+                            ),
+                          ),
+                          const SizedBox(
+                            width: 10,
+                          ),
+                          Expanded(
+                            child: ProfileEditingFields(
+                              isNeed: false,
+                              isDesc: false,
+                              textInputType: TextInputType.number,
+                              controller: presetMRPController,
+                              upText: "Preset selling Price"
+                                  .capitalizeFirstLetterOfEachWord(),
+                              hintText: "Preset selling Price"
+                                  .capitalizeFirstLetterOfEachWord(),
+                              isInsta: false,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                   const SizedBox(
                     height: 20,
                   ),
@@ -342,6 +412,12 @@ class _SinglePresetUploadingPageState extends State<SinglePresetUploadingPage> {
                     presetDescriptionController.text.trim();
                 final String presetPriceText =
                     presetPriceController.text.trim();
+                final String presetMRPPriceText =
+                    presetMRPController.text.trim();
+                bool needOfPrice = isPaid
+                    ? presetPriceText.isEmpty && presetMRPPriceText.isEmpty
+                    : presetPriceText.isNotEmpty &&
+                        presetMRPPriceText.isNotEmpty;
 
                 if (presetAdd.isEmpty) {
                   Fluttertoast.showToast(
@@ -351,19 +427,43 @@ class _SinglePresetUploadingPageState extends State<SinglePresetUploadingPage> {
                       msg: "Please Select Cover Images For Your Preset");
                 } else if (presetName.isEmpty ||
                     presetDescription.isEmpty ||
-                    presetPriceText.isEmpty) {
+                    needOfPrice) {
                   Fluttertoast.showToast(
                       msg: "Please Fill the necessary fields");
                 } else {
-                  final int? parsedPrice = int.tryParse(presetPriceText);
-                  if (parsedPrice == null) {
-                    Fluttertoast.showToast(msg: "Invalid Price");
+                  final int? parsedPrice =
+                      isPaid ? int.tryParse(presetPriceText) : -1;
+                  final int? parsedMRPPrice =
+                      isPaid ? int.tryParse(presetMRPPriceText) : -1;
+
+                  if (isPaid) {
+                    if (parsedPrice == null ||
+                        parsedPrice <= 0 ||
+                        parsedMRPPrice == null ||
+                        parsedMRPPrice <= 0) {
+                      Fluttertoast.showToast(msg: "Invalid Price values");
+                    } else {
+                      PresetUploader.uploadPreset(
+                        name: presetName,
+                        price: parsedPrice,
+                        priceMRP: parsedMRPPrice!,
+                        description: presetDescription,
+                        presetData: presetAdd,
+                        isPaid: isPaid,
+                        coverImages: selectedImages,
+                      );
+                      Future.delayed(const Duration(milliseconds: 800), () {
+                        Navigator.pop(context);
+                      });
+                    }
                   } else {
-                    DataUploadAdmin.uploadPreset(
+                    PresetUploader.uploadPreset(
                       name: presetName,
-                      price: parsedPrice,
+                      price: parsedPrice ?? -1,
+                      priceMRP: parsedMRPPrice ?? -1,
                       description: presetDescription,
                       presetData: presetAdd,
+                      isPaid: isPaid,
                       coverImages: selectedImages,
                     );
                     Future.delayed(const Duration(milliseconds: 800), () {
@@ -375,10 +475,149 @@ class _SinglePresetUploadingPageState extends State<SinglePresetUploadingPage> {
               text: 'Upload Preset',
             ),
             SizedBox(
-              height: size.height * .10,
+              height: size.height * .02,
+            ),
+            Padding(
+              padding: EdgeInsets.all(15),
+              child: Text(
+                'After uploading your preset, you can easily make adjustments, edits, or add information to enhance its settings. Whether you want to refine details, update descriptions, or control parameters, managing your presets is simple. Customize them further to ensure they meet your needs perfectly!👍',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Colors.blueGrey,
+                    ),
+                textAlign: TextAlign.justify,
+              ),
+            ),
+            SizedBox(
+              height: size.height * .05,
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+// ignore: must_be_immutable
+class CustomRadioButtons extends StatefulWidget {
+  bool isPaid;
+  final void Function() free;
+  final void Function() paid;
+  final void Function(bool?)? onChanged1;
+  final void Function(bool?)? onChanged2;
+  CustomRadioButtons(
+      {super.key,
+      required this.onChanged1,
+      required this.onChanged2,
+      required this.isPaid,
+      required this.free,
+      required this.paid});
+
+  @override
+  _CustomRadioButtonsState createState() => _CustomRadioButtonsState();
+}
+
+class _CustomRadioButtonsState extends State<CustomRadioButtons> {
+  @override
+  Widget build(BuildContext context) {
+    final Size size = MediaQuery.sizeOf(context);
+    return SizedBox(
+      height: size.height * .10,
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: GestureDetector(
+                  onTap: widget.free,
+                  child: Container(
+                    height: size.height * .08,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: widget.isPaid
+                          ? Colors.grey.shade300
+                          : Colors.blueAccent,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color:
+                            widget.isPaid ? Colors.black87 : Colors.transparent,
+                        width: 2,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 5,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Radio<bool>(
+                            activeColor: Colors.black87,
+                            value: false,
+                            groupValue: widget.isPaid,
+                            onChanged: widget.onChanged1),
+                        const Text(
+                          'Free',
+                          style: TextStyle(fontSize: 18),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16), // Space between buttons
+              Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      widget.isPaid = true;
+                    });
+                  },
+                  child: Container(
+                    height: size.height * .08,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: widget.isPaid
+                          ? Colors.blueAccent
+                          : Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: widget.isPaid
+                            ? Colors.transparent
+                            : Colors.blueAccent,
+                        width: 2,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 5,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Radio<bool>(
+                            activeColor: Colors.black87,
+                            value: true,
+                            groupValue: widget.isPaid,
+                            onChanged: widget.onChanged2),
+                        const Text(
+                          'Paid',
+                          style: TextStyle(fontSize: 18),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+        ],
       ),
     );
   }

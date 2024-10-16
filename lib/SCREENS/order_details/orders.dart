@@ -15,7 +15,6 @@ class OrdersPage extends StatelessWidget {
     return DefaultTabController(
       length: 2,
       child: Scaffold(
-        backgroundColor: "#f2f2f2".toColor(),
         appBar: AppBar(
           title: HelperText1(
             text: "Orders".capitalizeFirstLetterOfEachWord(),
@@ -26,10 +25,8 @@ class OrdersPage extends StatelessWidget {
           bottom: const TabBar(
             unselectedLabelColor: Colors.grey,
             labelColor: Colors.black,
-            labelStyle: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: Colors.black
-            ),
+            labelStyle:
+                TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
             indicatorColor: Colors.black87,
             tabs: [
               Tab(text: 'Purchase History'),
@@ -39,7 +36,7 @@ class OrdersPage extends StatelessWidget {
         ),
         body: TabBarView(
           children: [
-           PurchaseHistory(),
+            PurchaseHistory(),
             Container(
               child: const Center(
                 child: Text('Withdrawal History Content'),

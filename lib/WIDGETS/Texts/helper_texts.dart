@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:seller_app/CONSTANTS/fonts.dart';
+import 'package:seller_app/CUSTOM/font_controller.dart';
 
 class HelperText1 extends StatelessWidget {
   final String text;
@@ -17,17 +18,17 @@ class HelperText1 extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       text,
-      style: TextStyle(
+      style: PerfectTypogaphy.bold.copyWith(
         fontSize: fontSize,
-        fontWeight: FontWeight.normal,
+        // fontWeight: FontWeight.normal,
         color: color,
         decoration: decoration,
-        fontFamily: Getfont.rounder,
       ),
       textAlign: TextAlign.center,
     );
   }
 }
+
 class HelperText3 extends StatelessWidget {
   final String text;
   final Color color;
@@ -45,16 +46,12 @@ class HelperText3 extends StatelessWidget {
     return Text(
       text,
       maxLines: 2,
-      style: TextStyle(
+      style: PerfectTypogaphy.bold.copyWith(
         fontSize: fontSize,
-        fontWeight: FontWeight.bold,
         color: color,
         decoration: decoration,
-        fontFamily: Getfont.rounder,
       ),
       textAlign: TextAlign.start,
     );
   }
 }
-
-

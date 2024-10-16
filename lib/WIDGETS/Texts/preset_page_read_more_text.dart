@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:readmore/readmore.dart';
+import 'package:seller_app/CUSTOM/font_controller.dart';
 
 class GetReadMoreText extends StatelessWidget {
   final String text;
@@ -15,10 +16,12 @@ class GetReadMoreText extends StatelessWidget {
         textAlign: TextAlign.justify,
         trimMode: TrimMode.Line,
         trimLines: 2,
+        
         colorClickableText: Colors.green,
         trimCollapsedText: 'Show more',
         trimExpandedText: 'Show less',
         moreStyle: TextStyle(
+          
           fontSize: size.width * 0.04,
           color: Colors.green[600],
           fontWeight: FontWeight.bold,
@@ -30,7 +33,8 @@ class GetReadMoreText extends StatelessWidget {
         ),
         style: TextStyle(
           fontSize: size.width * 0.04,
-          color: Colors.black,
+          fontFamily: 'monuse',
+          color: Colors.black54,
         ),
       ),
     );

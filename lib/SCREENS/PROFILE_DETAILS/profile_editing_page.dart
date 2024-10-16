@@ -1,6 +1,5 @@
 import 'dart:developer';
 import 'dart:io';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
@@ -9,12 +8,13 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_cropper/image_cropper.dart';
-import 'package:seller_app/DATA/admin_data.dart';
 import 'package:seller_app/DATA/update_data.dart';
-import 'package:seller_app/FUNCTIONS/files_upload_auth_functions.dart';
-import 'package:seller_app/HELPERS/color_helper.dart';
+import 'package:seller_app/EXTENSION/color_extension.dart';
+import 'package:seller_app/FUNCTIONS/PRESET_CONTROLLER/preset_uploader.dart';
+import 'package:seller_app/FUNCTIONS/admin_data_controller_unit.dart';
 import 'package:seller_app/MODEL/admin_data_model.dart';
 import 'package:seller_app/WIDGETS/BUTTONS/preset_uploading.button.dart';
+import 'package:seller_app/WIDGETS/DIALOGUE/photo_permission_dialogue.dart';
 import 'package:seller_app/WIDGETS/DIALOGUE/reset_password_dialogue.dart';
 import 'package:seller_app/WIDGETS/Texts/helper_texts.dart';
 import 'package:seller_app/WIDGETS/editing_fields.dart';
@@ -38,6 +38,15 @@ class _ProfileEditingPageState extends State<ProfileEditingPage> {
   File? _pickedFile;
 
   Future<void> _uploadImage() async {
+     bool isPhotoPermimssionGranted = await checkPhotoGalleryPermission();
+
+    if(!isPhotoPermimssionGranted){
+       await showDialog(
+      context: context,
+      builder: (context) => const PhotoPermissionDialog(),
+    );
+    return;
+    }
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowMultiple: false,
@@ -79,7 +88,7 @@ class _ProfileEditingPageState extends State<ProfileEditingPage> {
       setState(() {
         _croppedFile = croppedFile;
       });
-      await DataUploadAdmin.uploadProfilePicture(File(croppedFile.path));
+      await PresetUploader.uploadProfilePicture(File(croppedFile.path));
     }
   }
 
@@ -101,8 +110,6 @@ class _ProfileEditingPageState extends State<ProfileEditingPage> {
             color: Colors.black87,
             fontSize: size.width * .06,
           ),
-          surfaceTintColor: Colors.transparent,
-          backgroundColor: Colors.transparent,
           actions: [
             CustomPopupMenuButton(
               iconData1: Icons.save,
@@ -120,8 +127,11 @@ class _ProfileEditingPageState extends State<ProfileEditingPage> {
               },
               text1: "Save",
             ),
+            SizedBox(
+              width: 10,
+            ),
           ]),
-      backgroundColor: getColor("#f2f2f2"),
+      backgroundColor: "#F0F8FF".toColor(),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
         child: Column(
@@ -130,7 +140,6 @@ class _ProfileEditingPageState extends State<ProfileEditingPage> {
             Center(
               child: InkWell(
                 onTap: () {
-                  // DataUploadAdmin.uploadProfilePicture();
                   _uploadImage();
                 },
                 child: Container(
@@ -154,35 +163,40 @@ class _ProfileEditingPageState extends State<ProfileEditingPage> {
                         child: Stack(
                           fit: StackFit.passthrough,
                           children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(100),
-                              child: CachedNetworkImage(
-                                
-                                imageUrl: widget.adminData.userProfileUrl !=
-                                            null &&
-                                        widget.adminData.userProfileUrl!
-                                            .isNotEmpty
-                                    ? widget.adminData.userProfileUrl.toString()
-                                    : "https://as2.ftcdn.net/v2/jpg/00/65/77/27/1000_F_65772719_A1UV5kLi5nCEWI0BNLLiFaBPEkUbv5Fv.jpg",
-                                fit: BoxFit.cover,
-                                filterQuality: FilterQuality.low,
-                                placeholder: (context, url) =>
-                                    const CircularProgressIndicator(),
-                                errorWidget: (context, url, error) => Center(
-                                  child: Icon(
-                                    Icons.add_a_photo,
-                                    color: Colors.grey,
+                            Hero(
+                              tag: "${widget.adminData.userProfileUrl}-2",
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(100),
+                                child: CachedNetworkImage(
+                                  imageUrl: widget.adminData.userProfileUrl !=
+                                              null &&
+                                          widget.adminData.userProfileUrl!
+                                              .isNotEmpty
+                                      ? widget.adminData.userProfileUrl
+                                          .toString()
+                                      : "https://static.vecteezy.com/system/resources/thumbnails/005/544/718/small_2x/profile-icon-design-free-vector.jpg",
+                                  fit: BoxFit.cover,
+                                  filterQuality: FilterQuality.low,
+                                  placeholder: (context, url) =>
+                                      const CircularProgressIndicator(),
+                                  errorWidget: (context, url, error) =>
+                                      const Center(
+                                    child: Icon(
+                                      Icons.add_a_photo,
+                                      color: Colors.grey,
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
                             widget.adminData.userProfileUrl!.isEmpty ||
                                     widget.adminData.userProfileUrl == null
-                                ? SizedBox()
+                                ? const SizedBox()
                                 : const Positioned(
                                     bottom: 10,
                                     right: 0,
-                                    child: Icon(Icons.add_a_photo_rounded))
+                                    child: Icon(Icons.add_a_photo_rounded),
+                                  )
                           ],
                         )),
                   ),
@@ -199,6 +213,7 @@ class _ProfileEditingPageState extends State<ProfileEditingPage> {
               hintText: "First Name",
               isInsta: false,
             ),
+            const SizedBox(height: 15),
             ProfileEditingFields(
               isDesc: false,
               isNeed: false,
@@ -208,6 +223,7 @@ class _ProfileEditingPageState extends State<ProfileEditingPage> {
               hintText: "Last Name",
               isInsta: false,
             ),
+            const SizedBox(height: 15),
             ProfileEditingFields(
               isNeed: true,
               isDesc: false,
@@ -217,6 +233,9 @@ class _ProfileEditingPageState extends State<ProfileEditingPage> {
               hintText: "Your instagram link",
               isInsta: true,
             ),
+            const SizedBox(height: 15),
+            // if(widget.adminData.instagram.toString().isNotEmpty)
+
             ProfileEditingFields(
               isNeed: true,
               isDesc: true,
@@ -229,13 +248,58 @@ class _ProfileEditingPageState extends State<ProfileEditingPage> {
             const SizedBox(
               height: 20,
             ),
-            Center(
-              child: GetPresetUploadingButton(
-                onPressed: () async {
-                  await saveChanges();
-                },
-                text: "Save",
-              ),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      saveChanges();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.black87,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 30, vertical: 15),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
+                    child: Text(
+                      'Save changes',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  width: 5,
+                ),
+                if (widget.adminData.instagram!.isNotEmpty)
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        UpdateAdminData.deleteInstagramLink();
+                        Navigator.pop(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red[300],
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 30, vertical: 15),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                      child: Text(
+                        'Delete Link',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                      ),
+                    ),
+                  ),
+              ],
             ),
             const SizedBox(
               height: 20,
@@ -276,5 +340,6 @@ class _ProfileEditingPageState extends State<ProfileEditingPage> {
     } else {
       Fluttertoast.showToast(msg: 'No changes detected');
     }
+    Navigator.pop(context);
   }
 }

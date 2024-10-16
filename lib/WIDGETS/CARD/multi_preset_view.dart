@@ -7,20 +7,17 @@ import 'package:seller_app/PROVIDERS/page_view_controller_provider.dart';
 class PresetAndCoverImageView extends StatelessWidget {
   final void Function() onTap;
   final int index;
-  final void Function()? onLongPress;
   final String imgUrl;
   const PresetAndCoverImageView(
       {super.key,
       required this.onTap,
       required this.index,
-      this.onLongPress,
       required this.imgUrl});
 
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.sizeOf(context);
     return InkWell(
-      onLongPress: onLongPress,
       onTap: onTap,
       child: SizedBox(
           height: size.height * .10,

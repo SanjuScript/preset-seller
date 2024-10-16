@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:seller_app/DATA/admin_data.dart';
-import 'package:seller_app/FUNCTIONS/admin_data_controller_unit.dart';
-import 'package:seller_app/FUNCTIONS/profile_auth_functions.dart';
+import 'package:seller_app/CONTROLLER/user_auth_controller.dart';
+
 
 class ResetPasswordDialog extends StatelessWidget {
   final String emailAddress;

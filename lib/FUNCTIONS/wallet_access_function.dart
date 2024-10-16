@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:seller_app/API/auth_api.dart';
+import 'package:seller_app/API/notification_handling_api.dart';
 import 'package:seller_app/MODEL/wallet_data_model.dart';
 
 class WalletController {
@@ -57,8 +58,13 @@ class WalletController {
           .update({
         'iswithdrawing': isWithdrawing,
         "balance": amount,
-        "last_updated":DateTime.now(),
+        "last_updated": DateTime.now(),
       });
+      await NotificationApi.showPaymentNotification(
+        body: "Withdrawel successful",
+        title: "Your amount will be credited within 7 days",
+        payload: "withdrawel_pending",
+      );
       log("isWithdrawing updated successfully to $isWithdrawing");
     } catch (e) {
       log("Error updating isWithdrawing: $e");

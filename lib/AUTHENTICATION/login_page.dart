@@ -1,4 +1,5 @@
 // ignore_for_file: use_build_context_synchronously
+import 'dart:developer';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -7,10 +8,12 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 import 'package:seller_app/CONSTANTS/assets.dart';
 import 'package:seller_app/CONSTANTS/fonts.dart';
-import 'package:seller_app/FUNCTIONS/profile_auth_functions.dart';
+import 'package:seller_app/CONTROLLER/network_controller.dart';
+import 'package:seller_app/CONTROLLER/user_auth_controller.dart';
 import 'package:seller_app/FUNCTIONS/login_auth_functions.dart';
 import 'package:seller_app/PROVIDERS/auth_page_controller_provider.dart';
 import 'package:seller_app/WIDGETS/BUTTONS/login_buttons.dart';
+import 'package:seller_app/WIDGETS/DIALOGUE/network_error_dialogue.dart';
 import 'package:seller_app/WIDGETS/Texts/helper_texts.dart';
 import 'package:seller_app/WIDGETS/custom_textfield.dart';
 import 'package:seller_app/WIDGETS/textfield_containers.dart';
@@ -41,6 +44,8 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.sizeOf(context);
+
+    final authProvider = Provider.of<LoginAuthProvider>(context, listen: false);
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: SingleChildScrollView(
@@ -60,7 +65,7 @@ class _LoginPageState extends State<LoginPage> {
                     fontSize: size.width * 0.12,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
-                    fontFamily: Getfont.rounder,
+                    fontFamily: 'monuse',
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -197,12 +202,45 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         AuthenticationButton(
                           onTap: () async {
+                            if (10 > 2) {
+                               Fluttertoast.showToast(
+                                      msg: "Unable to process. Please use google signing method",
+                                      backgroundColor: Colors.red[300]);
+                              return;
+                            }
                             final fieldData = await getFieldData();
                             if (fieldData != null && fieldData) {
-                              LoginAuth.doSignIn(
+                              if (await NetworkInterceptor
+                                  .isNetworkAvailable()) {
+                                if (fieldData != null && fieldData) {
+                                  authProvider.doSignIn(
+                                    context,
+                                    emailController.text,
+                                    passwordController.text,
+                                  );
+                                } else {
+                                  Fluttertoast.showToast(
+                                      msg: "PLease fill the necessary details");
+                                }
+                              } else {
+                                showDialog(
+                                  barrierDismissible: false,
                                   context: context,
-                                  email: emailController.text,
-                                  pass: passwordController.text);
+                                  builder: (_) => NetworkErrorDialog(
+                                    onPressed: () async {
+                                      if (!await NetworkInterceptor
+                                          .isNetworkAvailable()) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(const SnackBar(
+                                                content: Text(
+                                                    'Please turn on your wifi or mobile data')));
+                                      } else {
+                                        Navigator.pop(context);
+                                      }
+                                    },
+                                  ),
+                                );
+                              }
                             }
                           },
                           text: "Login",
@@ -235,8 +273,15 @@ class _LoginPageState extends State<LoginPage> {
                             children: [
                               const Spacer(),
                               InkWell(
-                                onTap: () {
-                                  LoginAuth.doGoogleSignIn(context);
+                                onTap: () async {
+                                  showGLoading();
+                                  try {
+                                    await authProvider.doGoogleSignIn(context);
+                                  } catch (e) {
+                                    log(e.toString());
+                                  } finally {
+                                    Navigator.pop(context);
+                                  }
                                 },
                                 child: SvgPicture.asset(
                                   GetAssetFile.googleIcon,
@@ -286,6 +331,25 @@ class _LoginPageState extends State<LoginPage> {
               )
             ]),
       ),
+    );
+  }
+
+  void showGLoading() {
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Prevent user from dismissing dialog
+      builder: (BuildContext context) {
+        return const AlertDialog(
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 10),
+              Text('Logging in...'),
+            ],
+          ),
+        );
+      },
     );
   }
 }

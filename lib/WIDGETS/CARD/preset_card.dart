@@ -1,11 +1,14 @@
 import 'dart:developer';
+import 'dart:ui';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:seller_app/CUSTOM/font_controller.dart';
 import 'package:seller_app/EXTENSION/capitalize.dart';
-import 'package:seller_app/WIDGETS/STATUS_WIDGET/status_display.dart';
+import 'package:seller_app/WIDGETS/STATUS_WIDGET/status_widget.dart';
+import 'package:seller_app/WIDGETS/Texts/helper_texts.dart';
 
 class PresetCard extends StatelessWidget {
   final String url;
@@ -16,7 +19,9 @@ class PresetCard extends StatelessWidget {
   final void Function() onTap;
   final bool isListed;
   final String status;
+  final bool isPaid;
   final void Function()? onLongPress;
+  final Color color;
   const PresetCard(
       {super.key,
       required this.url,
@@ -24,9 +29,11 @@ class PresetCard extends StatelessWidget {
       required this.presetName,
       required this.price,
       this.onLongPress,
+      this.color = Colors.white,
       required this.onTap,
       required this.isListed,
       required this.length,
+      required this.isPaid,
       required this.status});
 
   @override
@@ -36,133 +43,100 @@ class PresetCard extends StatelessWidget {
       onTap: onTap,
       onLongPress: onLongPress,
       child: Container(
-        height: size.height * 0.25,
+        height: size.height * 0.32,
         width: size.width * 0.90,
         margin: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(25),
-          boxShadow: const [
+          color: color,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
             BoxShadow(
-              color: Colors.white,
-              offset: Offset(3, -3),
-              blurRadius: 10,
-            ),
-            BoxShadow(
-              color: Colors.white,
-              offset: Offset(-3, 3),
-              blurRadius: 10,
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 15,
+              offset: const Offset(0, 5),
             ),
           ],
         ),
-        child: Stack(
-          fit: StackFit.passthrough,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(25),
-              child: Hero(
-                tag: url,
-                child: CachedNetworkImage(
-                  imageUrl: url,
-                  fit: BoxFit.cover,
-                  placeholder: (context, url) =>
-                      const CircularProgressIndicator(),
-                  errorWidget: (context, url, error) {
-                    log(error.toString());
-                    return const Icon(
-                      Icons.error,
-                      color: Colors.red,
-                    );
-                  },
+            const SizedBox(height: 5),
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: Hero(
+                    tag: url,
+                    child: CachedNetworkImage(
+                      width: size.width * .90,
+                      height: size.height * .25,
+                      imageUrl: url,
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) =>
+                          const CircularProgressIndicator(),
+                      errorWidget: (context, url, error) {
+                        log(error.toString());
+                        return const Icon(
+                          Icons.error,
+                          color: Colors.red,
+                        );
+                      },
+                    ),
+                  ),
                 ),
-              ),
+                if (status != "approved") ...[
+                  StatusDisplayer(status: status),
+                ],
+              ],
             ),
-            Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(25),
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.black.withOpacity(0.0),
-                    Colors.transparent,
-                    Colors.black.withOpacity(.8),
-                  ],
-                ),
-              ),
-              child: Stack(
+            const SizedBox(height: 5),
+            SizedBox(
+              height: size.height * .055,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  status == "approved"
-                      ? const ApprovedDisplay()
-                      : status == "pending"
-                          ? const ReviewDisplay()
-                          : const RejectedDisplay(),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 10, horizontal: 10),
-                        child: Align(
-                          alignment: Alignment.bottomRight,
+                  Text(
+                    isPaid ? '$price RS' : "FREE",
+                    style: PerfectTypogaphy.bold.copyWith(
+                      fontSize: size.width * 0.06,
+                      overflow: TextOverflow.ellipsis,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  Text(
+                    presetName.capitalizeFirstLetterOfEachWord(),
+                    style: PerfectTypogaphy.regular.copyWith(
+                      fontSize: size.width * 0.06,
+                      overflow: TextOverflow.ellipsis,
+                      fontWeight: FontWeight.normal,
+                      color: Colors.black87,
+                    ),
+                    textAlign: TextAlign.right,
+                  ),
+                  isListed
+                      ? Container(
+                          height: 30,
+                          width: 30,
+                          margin: const EdgeInsets.only(bottom: 10),
+                          decoration: const BoxDecoration(
+                            color: Colors.black87,
+                            shape: BoxShape.circle,
+                          ),
                           child: Text(
-                            '$price RS',
+                            length.toString(),
                             style: TextStyle(
                               fontSize: size.width * 0.06,
                               overflow: TextOverflow.ellipsis,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
-                              fontFamily: 'rounder',
+                              fontFamily: 'monuse',
                             ),
                             textAlign: TextAlign.center,
                           ),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 10, horizontal: 20),
-                        child: Align(
-                          alignment: Alignment.bottomRight,
-                          child: Text(
-                            presetName.capitalizeFirstLetterOfEachWord(),
-                            style: TextStyle(
-                              fontSize: size.width * 0.06,
-                              overflow: TextOverflow.ellipsis,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                              fontFamily: 'hando',
-                            ),
-                            textAlign: TextAlign.right,
-                          ),
-                        ),
-                      ),
-                      isListed
-                          ? Align(
-                              alignment: Alignment.bottomRight,
-                              child: Container(
-                                height: 30,
-                                width: 30,
-                                margin: const EdgeInsets.only(bottom: 10),
-                                decoration: const BoxDecoration(
-                                  color: Colors.white,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Text(
-                                  length.toString(),
-                                  style: TextStyle(
-                                    fontSize: size.width * 0.06,
-                                    overflow: TextOverflow.ellipsis,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black,
-                                    fontFamily: 'rounder',
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-                            )
-                          : const SizedBox()
-                    ],
-                  ),
+                        )
+                      : const SizedBox()
                 ],
               ),
             ),

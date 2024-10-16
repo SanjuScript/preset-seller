@@ -1,8 +1,7 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:seller_app/API/auth_api.dart';
+import 'package:seller_app/CUSTOM/font_controller.dart';
 import 'package:seller_app/EXTENSION/capitalize.dart';
+import 'package:seller_app/SCREENS/PRESET_UPLOADING/preset_uploading_policy.dart';
 
 class PresetPrivacy extends StatelessWidget {
   const PresetPrivacy({super.key});
@@ -13,15 +12,17 @@ class PresetPrivacy extends StatelessWidget {
 
     return InkWell(
       onTap: () {
-        Navigator.pushNamed(context, "/presetPolicy");
+        Navigator.push(context, MaterialPageRoute(builder: (context) {
+          return const PresetUploadPolicy();
+        }));
       },
       child: Container(
         height: size.height * .05,
         width: size.width * .8,
-        padding: EdgeInsets.all(5),
-        decoration: BoxDecoration(
-          color: Colors.grey[300],
-          borderRadius: const BorderRadius.all(
+        padding: const EdgeInsets.all(5),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.all(
             Radius.circular(30),
           ),
         ),
@@ -38,11 +39,9 @@ class PresetPrivacy extends StatelessWidget {
                 width: 10,
               ),
               Text(
-                "See this rules before uploading presets !!".capitalizeFirstLetterOfEachWord(),
-                style: const TextStyle(
-                    // fontFamily: Getfont.rounder,
-                    fontWeight: FontWeight.normal),
-              ),
+                  "See this rules before uploading presets !!"
+                      .capitalizeFirstLetterOfEachWord(),
+                  style: PerfectTypogaphy.regular.copyWith()),
             ],
           ),
         ),

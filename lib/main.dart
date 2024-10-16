@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -9,21 +10,20 @@ import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 import 'package:seller_app/API/notification_handling_api.dart';
+import 'package:seller_app/FUNCTIONS/login_auth_functions.dart';
 import 'package:seller_app/PROVIDERS/auth_page_controller_provider.dart';
 import 'package:seller_app/PROVIDERS/bottom_nav_provider.dart';
 import 'package:seller_app/PROVIDERS/page_view_controller_provider.dart';
 import 'package:seller_app/PROVIDERS/password_visibility_provider.dart';
-import 'package:seller_app/AUTHENTICATION/authentication_page.dart';
 import 'package:seller_app/PROVIDERS/permission_provider.dart';
 import 'package:seller_app/PROVIDERS/policy_status_checking_provider.dart';
 import 'package:seller_app/PROVIDERS/user_profile_provider.dart';
-import 'package:seller_app/SCREENS/bottom_nav.dart';
-import 'package:seller_app/SCREENS/lightroom_presets/preset_view_page.dart';
-import 'package:seller_app/SCREENS/lightroom_presets/presets_list.dart';
-import 'package:seller_app/SCREENS/preset_uploading/preset_uploading_policy.dart';
+import 'package:seller_app/ROUTER/page_router.dart';
+import 'package:seller_app/THEME/app_theme.dart';
+import 'package:seller_app/WIDGETS/DIALOGUE/notification_permimssion_dialogue.dart';
 import 'package:seller_app/firebase_options.dart';
 
-final GlobalKey<NavigatorState> authPageControllerKey = GlobalKey();
+FirebaseAnalytics firebaseAnalytics = FirebaseAnalytics.instance;
 Future _firebaseBackgroundMessage(RemoteMessage message) async {
   if (message.notification != null) {
     log("Some notification Received in background...");
@@ -33,7 +33,7 @@ Future _firebaseBackgroundMessage(RemoteMessage message) async {
 // to handle notification on foreground on web platform
 void showNotification({required String title, required String body}) {
   showDialog(
-    context: navigatorKey.currentContext!,
+    context: navigationKey.currentContext!,
     builder: (context) => AlertDialog(
       title: Text(title),
       content: Text(body),
@@ -65,16 +65,18 @@ Future<void> main() async {
       log("Background Notification Tapped");
       // handleNotificationTapped(message);
       log(message.toMap().toString());
-      navigatorKey.currentState!.pushNamed("/home");
+      AppRouter.router.go("/home");
     }
   });
 
   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
     String payloadData = jsonEncode(message.data);
+    log(payloadData);
     log("Got a message in foreground");
     if (message.notification != null) {
       if (kIsWeb) {
         showNotification(
+          
             title: message.notification!.title!,
             body: message.notification!.body!);
       } else {
@@ -119,6 +121,9 @@ Future<void> main() async {
         create: (_) => PresetsPageViewContollerProvider(),
       ),
       ChangeNotifierProvider(
+        create: (_) => LoginAuthProvider(),
+      ),
+      ChangeNotifierProvider(
         create: (_) => userProfile,
       ),
     ],
@@ -140,27 +145,27 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      navigatorKey: navigatorKey,
-      routes: {
-        "/home": (context) => const BottomNav(),
-        "/presetList": (context) => const PresetListPage(),
-        "/presetView": (context) => const PresetViewPage(),
-        "/presetPolicy": (context) => const PresetUploadPolicy(),
-      },
-      home: StreamBuilder<User?>(
-        stream: _auth.authStateChanges(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Scaffold(body: CircularProgressIndicator());
-          }
-          if (snapshot.hasData && snapshot.data != null) {
-            return const BottomNav();
-          } else {
-            return const AuthenticationPage();
-          }
-        },
-      ),
+    return MaterialApp.router(
+      routerDelegate: AppRouter.router.routerDelegate,
+      routeInformationParser: AppRouter.router.routeInformationParser,
+      routeInformationProvider: AppRouter.router.routeInformationProvider,
+      theme: PerfectTeme.lightTheme
     );
   }
+
+ 
 }
+
+ Future<void> checkNotificatiodfsdfnPermission(BuildContext context) async {
+    bool isNotificationEnabled =
+        await NotificationApi.checkNotificationPermission();
+    if (!isNotificationEnabled) {
+      showDialog(
+        // ignore: use_build_context_synchronously
+        context: context,
+        builder: (BuildContext context) {
+          return const NotificationPermissionDialog();
+        },
+      );
+    }
+  }

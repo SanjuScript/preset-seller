@@ -22,15 +22,12 @@ class WalletPage extends StatelessWidget {
   Widget build(BuildContext context) {
     Size size = MediaQuery.sizeOf(context);
     return Scaffold(
-      backgroundColor: "#f2f2f2".toColor(),
       appBar: AppBar(
         title: HelperText1(
           text: "Wallet".capitalizeFirstLetterOfEachWord(),
           color: Colors.black87,
           fontSize: 25,
         ),
-        surfaceTintColor: Colors.transparent,
-        backgroundColor: Colors.white,
         actions: [
           HelpPopupMenu(context: context),
         ],
@@ -70,12 +67,10 @@ class WalletPage extends StatelessWidget {
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
-                                'Current Balance in INR',
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                             const HelperText1(
+                                text: "Current Balance in INR",
+                                color: Colors.black87,
+                                fontSize: 23,
                               ),
                               Text(
                                 '${walletData?.balance ?? 0}', // Replace with actual balance
@@ -134,6 +129,7 @@ class WalletPage extends StatelessWidget {
                       wordSpacing: 1.2),
                 ),
               ),
+              SizedBox(height: 15),
               ProfileEditingFields(
                 isNeed: false,
                 isDesc: false,
@@ -144,6 +140,7 @@ class WalletPage extends StatelessWidget {
                 hintText: "Enter your UPI ID",
                 isInsta: false,
               ),
+              SizedBox(height: 15),
               ProfileEditingFields(
                 isNeed: false,
                 isDesc: false,

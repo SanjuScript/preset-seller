@@ -24,7 +24,7 @@ class PaymentDataController {
       Fluttertoast.showToast(
         msg: 'Payment details uploaded successfully.',
       );
-      DataController.updatePaymentStatus(true);
+      // DataController.updatePaymentStatus(true);
     } catch (e) {
       log('Error uploading payment details: $e');
       Fluttertoast.showToast(

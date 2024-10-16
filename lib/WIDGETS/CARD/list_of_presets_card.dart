@@ -1,7 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:seller_app/EXTENSION/capitalize.dart';
-import 'package:seller_app/HELPERS/color_helper.dart';
 
 class ListOfPresets extends StatelessWidget {
   final String url;
